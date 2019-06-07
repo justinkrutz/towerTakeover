@@ -1,7 +1,23 @@
 #include "vex.h"
+// #include <math.h>
 using namespace vex;
+vex::competition Competition;
 vex::brain Brain;
-vex::controller Controller;
+vex::controller Controller1 = vex::controller();
+vex::motor FrontRightMotor  = vex::motor( vex::PORT1);
+vex::motor FrontLeftMotor   = vex::motor( vex::PORT2, true);
+vex::motor BackRightMotor   = vex::motor( vex::PORT9);
+vex::motor BackLeftMotor    = vex::motor( vex::PORT10, true);
+
+
+
+
+
+// A global instance of vex::brain used for printing to the V5 brain screen
+// A global instance of vex::competition
+
+
+// define your global instances of motors and other devices here
 
 //Menu
   #define green color(0x00ff00)
@@ -28,7 +44,7 @@ vex::controller Controller;
   //   else
   // }
 
-
+  bool preAuton = true;
   bool screenPressed = false;
   // bool edgeTrigger = Brain.Screen.pressing() && !screenPressed;
   int currentMenu = 0;
@@ -49,46 +65,46 @@ vex::controller Controller;
   Page pages[41] = {
   ////////    p, b1, b2, b3, b4,    type,  color,                "name",                    "description",  swSt,  sP
   /*  0 */  { 0,  1,  2,  3,  4,  folder, __null,                    ""},
-  /*  1 */  { 0, 12,  5,  0,  0,  folder,    red,                 "Red"},
-  /*  2 */  { 0, 26, 19,  0,  0,  folder,   blue,                "Blue"},
-  /*  3 */  { 0, 33,  0,  0,  0,  folder, yellow,              "Skills"},
-  /*  4 */  { 0, 34, 35, 36,  0,  folder,  green,               "Other"},
-  /*  5 */  { 1,  6,  9,  0,  0,  folder,    red,                "Back"},
-  /*  6 */  { 5,  7,  8,  0,  0,  folder,    red,             "Parking"},
-  /*  7 */  { 6,  0,  0,  0,  0,   auton,    red,       "3 flags 1 cap",      "(insert description here)"},  
-  /*  8 */  { 6,  0,  0,  0,  0,   auton,    red,     "5 flags no caps",      "(insert description here)"},
-  /*  9 */  { 5, 10, 11,  0,  0,  folder,    red,         "Non-Parking"},
-  /* 10 */  { 9,  0,  0,  0,  0,   auton,    red,       "3 flags 1 cap",      "(insert description here)"},
-  /* 11 */  { 9,  0,  0,  0,  0,   auton,    red,     "5 flags no caps",      "(insert description here)"},
-  /* 12 */  { 1, 13, 16,  0,  0,  folder,    red,               "Front"},
-  /* 13 */  {12, 14, 15,  0,  0,  folder,    red,             "Parking"},
-  /* 14 */  {13,  0,  0,  0,  0,   auton,    red,       "3 flags 1 cap",      "(insert description here)"},  
-  /* 15 */  {13,  0,  0,  0,  0,   auton,    red,     "5 flags no caps",      "(insert description here)"},
-  /* 16 */  {12, 17, 18,  0,  0,  folder,    red,         "Non-Parking"},
-  /* 17 */  {16,  0,  0,  0,  0,   auton,    red,       "3 flags 1 cap",      "(insert description here)"},  
-  /* 18 */  {16,  0,  0,  0,  0,   auton,    red,     "5 flags no caps",      "(insert description here)"},
-  /* 19 */  { 2, 20, 23,  0,  0,  folder,   blue,                "Back"},
-  /* 20 */  {19, 21, 22,  0,  0,  folder,   blue,             "Parking"},
-  /* 21 */  {20,  0,  0,  0,  0,   auton,   blue,       "3 flags 1 cap",      "(insert description here)"},  
-  /* 22 */  {20,  0,  0,  0,  0,   auton,   blue,     "5 flags no caps",      "(insert description here)"},
-  /* 23 */  {19, 24, 25,  0,  0,  folder,   blue,         "Non-Parking"},
-  /* 24 */  {23,  0, 0,   0,  0,   auton,   blue,       "3 flags 1 cap",      "(insert description here)"},  
-  /* 25 */  {23,  0,  0,  0,  0,   auton,   blue,     "5 flags no caps",      "(insert description here)"},
-  /* 26 */  { 2, 27, 30,  0,  0,  folder,   blue,               "Front"},
-  /* 27 */  {26, 28, 29,  0,  0,  folder,   blue,             "Parking"},
-  /* 28 */  {27,  0,  0,  0,  0,   auton,   blue,       "3 flags 1 cap",      "(insert description here)"},  
-  /* 29 */  {27,  0,  0,  0,  0,   auton,   blue,     "5 flags no caps",      "(insert description here)"},
-  /* 30 */  {26, 31, 32,  0,  0,  folder,   blue,         "Non-Parking"},
-  /* 31 */  {30,  0,  0,  0,  0,   auton,   blue,       "3 flags 1 cap",      "(insert description here)"},  
-  /* 32 */  {30,  0,  0,  0,  0,   auton,   blue,     "5 flags no caps",      "(insert description here)"},
-  /* 33 */  { 3,  0,  0,  0,  0,   auton, yellow,          "Skills one",             "Does skills stuff."},
-  /* 34 */  { 4, 37, 38, 39, 40,  folder,  green,            "Settings"},
-  /* 35 */  { 4,  0,  0,  0,  0,   auton,  green,                "None",                  "Does nothing."},
-  /* 36 */  { 4,  0,  0,  0,  0,   auton,  green, "Random test program",                "Self destructs."},
-  /* 37 */  {34,  0,  0,  0,  0, sSlider,  green,      "Useless slider",                    "Is useless.", false,  57},
-  /* 38 */  {34,  0,  0,  0,  0, sSwitch,  green,       "Self destruct", "Toggles self dectruct feature.",  true},
-  /* 39 */  {34,  0,  0,  0,  0, sSwitch,  green,                 "Win",         "Toggles match outcome.", false},
-  /* 40 */  {34,  0,  0,  0,  0, sSwitch,  green,              "Flight",        "Toggles ability to fly.", false},
+  /*  1 */  { 0,  5,  6,  7,  0,  folder,    red,                 "Red"},
+  /*  2 */  { 0,  0,  0,  0,  0,  folder,   blue,                "Blue"},
+  /*  3 */  { 0,  8,  0,  0,  0,  folder, yellow,              "Skills"},
+  /*  4 */  { 0,  9, 10, 11,  0,  folder,  green,               "Other"},
+  /*  5 */  { 1,  0,  0,  0,  0,   auton,    red,           "Auton One",                           "Huey"},  
+  /*  6 */  { 1,  0,  0,  0,  0,   auton,    red,           "Auton Two",                          "Dewey"},
+  /*  7 */  { 1,  0,  0,  0,  0,   auton,    red,         "Auton Three",                          "\"The third one\""},
+  /*  8 */  { 3,  0,  0,  0,  0,   auton, yellow,          "Skills one",             "Does skills stuff."},
+  /*  9 */  { 4, 12, 13, 14, 15,  folder,  green,            "Settings"},
+  /* 10 */  { 4,  0,  0,  0,  0,   auton,  green,                "None",                  "Does nothing."},
+  /* 11 */  { 4,  0,  0,  0,  0,   auton,  green, "Random test program",                "Self destructs."},
+  /* 12 */  {9,  0,  0,  0,  0, sSlider,  green,      "Useless slider",                    "Is useless.", false,  57},
+  /* 13 */  {9,  0,  0,  0,  0, sSwitch,  green,       "Self destruct", "Toggles self dectruct feature.",  true},
+  /* 14 */  {9,  0,  0,  0,  0, sSwitch,  green,                 "Win",         "Toggles match outcome.", false},  
+  /* 15 */  {9,  0,  0,  0,  0, sSwitch,  green,              "Flight",        "Toggles ability to fly.", false},  
+  /* 16 */  
+  /* 17 */  
+  /* 18 */  
+  /* 19 */  
+  /* 20 */  
+  /* 21 */    
+  /* 22 */  
+  /* 23 */  
+  /* 24 */    
+  /* 25 */  
+  /* 26 */  
+  /* 27 */  
+  /* 28 */    
+  /* 29 */  
+  /* 30 */  
+  /* 31 */    
+  /* 32 */  
+  /* 33 */  
+  /* 34 */  
+  /* 35 */  
+  /* 36 */  
+  /* 37 */  
+  /* 38 */  
+  /* 39 */  
+  /* 40 */  
   ////////    p, b1, b2, b3, b4,    type,  color,                "name",                    "description",  swSt,  sP
   };
 
@@ -210,12 +226,6 @@ vex::controller Controller;
     menuFolder();
     menuButton(1, currentPage);
 
-    // uint8_t settings();
-
-    // Brain.SDcard.savefile("settings", &settings, 1);
-
-    // Brain.SDcard.appendfile("settings", &settings, 1);
-
     if (pages[currentPage].sliderPct < 0) pages[currentPage].sliderPct = 0;
     else if (pages[currentPage].sliderPct > 100) pages[currentPage].sliderPct = 100;
 
@@ -253,10 +263,26 @@ vex::controller Controller;
     else if (pages[currentPage].pageType == sSlider) menusSlider();
   }
 
+  int selectedAuton() {
+    // Brain.SDcard.loadfile("lastAuton", selectedAuton, 2);
+    switch(currentPage){ 
+      case  5: return  5;
+      case  6: return  6;
+      case  7: return  7;
+      case  8: return  8;
+      case 11: return 11;
+      default: return 10;
+      // Brain.SDcard.("lastAuton", selectedAuton, 2);
+
+    }
+  }
+
   void controllerDraw() {
-    Controller.Screen.setCursor(1, 1);
-    Controller.Screen.clearLine();
-    Controller.Screen.print(pages[currentPage].name);
+    Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.clearLine(3);
+    // Controller.Screen.print("");
+    Controller1.Screen.print(pages[selectedAuton()].name);
+    // Controller.Screen.print(pages[currentPage].name);
   }
 
   void menuLcdTouch() {
@@ -292,10 +318,95 @@ vex::controller Controller;
   }
 //////
 
-int main() {
-  menuLcdDraw();
-  Brain.Screen.render();
+
+/*---------------------------------------------------------------------------*/
+/*                          Pre-Autonomous Functions                         */
+/*                                                                           */
+/*  You may want to perform some actions before the competition starts.      */
+/*  Do them in the following function.  You must return from this function   */
+/*  or the autonomous and usercontrol tasks will not be started.  This       */
+/*  function is only called once after the cortex has been powered on and    */ 
+/*  not every time that the robot is disabled.                               */
+/*---------------------------------------------------------------------------*/
+
+void pre_auton( void ) {
+  // menuLcdDraw();
+  // controllerDraw();
+  // Brain.Screen.render();
+  // while (preAuton) {
+  //   menuLcdTouch();
+  // }
+}
+
+/*---------------------------------------------------------------------------*/
+/*                                                                           */
+/*                              Autonomous Task                              */
+/*                                                                           */
+/*  This task is used to control your robot during the autonomous phase of   */
+/*  a VEX Competition.                                                       */
+/*                                                                           */
+/*  You must modify the code to add your own robot specific commands here.   */
+/*---------------------------------------------------------------------------*/
+
+void autonomous( void ) {
+  // Brain.SDcard.appendfile("lastAuton", selectedAuton, 2);
+  // Brain.Screen.clearScreen();
+}
+
+/*---------------------------------------------------------------------------*/
+/*                                                                           */
+/*                              User Control Task                            */
+/*                                                                           */
+/*  This task is used to control your robot during the user control phase of */
+/*  a VEX Competition.                                                       */
+/*                                                                           */
+/*  You must modify the code to add your own robot specific commands here.   */
+/*---------------------------------------------------------------------------*/
+
+void usercontrol( void ) {
+  // User control code here, inside the loop
   while (1) {
-    menuLcdTouch();
+      double axis3Prop = (pow(Controller1.Axis3.position(), 3) / 10000);
+      double axis4Prop = (pow(Controller1.Axis4.position(), 3) / 10000);
+      FrontLeftMotor.setBrake(brake);
+      FrontRightMotor.setBrake(brake);
+      BackLeftMotor.setBrake(brake);
+      BackRightMotor.setBrake(brake);
+
+          // (axis3+axis4)/3
+      FrontLeftMotor.spin  (vex::directionType::fwd, (axis3Prop - axis4Prop), vex::velocityUnits::pct); 
+      FrontRightMotor.spin (vex::directionType::fwd, (axis3Prop + axis4Prop), vex::velocityUnits::pct);
+      BackLeftMotor.spin   (vex::directionType::fwd, (axis3Prop - axis4Prop), vex::velocityUnits::pct); 
+      BackRightMotor.spin  (vex::directionType::fwd, (axis3Prop + axis4Prop), vex::velocityUnits::pct);
+
+
+    // This is the main execution loop for the user control program.
+    // Each time through the loop your program should update motor + servo 
+    // values based on feedback from the joysticks.
+
+    // ........................................................................
+    // Insert user code here. This is where you use the joystick values to 
+    // update your motors, etc.
+    // ........................................................................
+ 
+    vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 
   }
+}
+
+//
+// Main will set up the competition functions and callbacks.
+//
+int main() {
+    //Set up callbacks for autonomous and driver control periods.
+    Competition.autonomous( autonomous );
+    Competition.drivercontrol( usercontrol );
+    
+    //Run the pre-autonomous function. 
+    pre_auton();
+       
+    //Prevent main from exiting with an infinite loop.                        
+    while(1) {
+      vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
+    }    
+       
 }
