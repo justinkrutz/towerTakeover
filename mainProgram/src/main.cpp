@@ -1,412 +1,276 @@
 #include "vex.h"
-// #include <math.h>
+
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// intakeLeft           motor         3               
+// intakeRight          motor         4               
+// Controller2          controller                    
+// tray                 motor         7               
+// frontLeft            motor         1               
+// frontRight           motor         2               
+// backLeft             motor         9               
+// backRight            motor         10              
+// arms                 motor         8               
+// goalButton           bumper        A               
+// leftIntakeSwitch     limit         C               
+// rightIntakeSwitch    limit         D               
+// Vision               vision        6               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+
 using namespace vex;
 vex::competition Competition;
-vex::brain Brain;
-vex::controller Controller1 = vex::controller();
-vex::motor FrontRightMotor  = vex::motor( vex::PORT1);
-vex::motor FrontLeftMotor   = vex::motor( vex::PORT2, true);
-vex::motor BackRightMotor   = vex::motor( vex::PORT9);
-vex::motor BackLeftMotor    = vex::motor( vex::PORT10, true);
+vex::timer loopTime;
+motor_group intake ( intakeLeft, intakeRight );
+
+// vision::signature CUBE_ORANGE (1, 6343, 7765, 7054, -2843, -1635, -2239, 3.000, 0);
+// vision::signature CUBE_GREEN (2, -6065, -3709, -4887, -3385, -1461, -2423, 2.500, 0);
+// vision::signature CUBE_PURPLE (3, 1401, 2161, 1781, 7625, 9415, 8520, 3.000, 0);
+// vision::signature SIG_4 (4, 0, 0, 0, 0, 0, 0, 2.500, 0);
+// vision::signature SIG_5 (5, 0, 0, 0, 0, 0, 0, 2.500, 0);
+// vision::signature SIG_6 (6, 0, 0, 0, 0, 0, 0, 2.500, 0);
+// vision::signature SIG_7 (7, 0, 0, 0, 0, 0, 0, 2.500, 0);
+// vex::vision vision1 ( vex::PORT1, 60, CUBE_ORANGE, CUBE_GREEN, CUBE_PURPLE, SIG_4, SIG_5, SIG_6, SIG_7 );
+
+double stickForward(0);
+double stickSideways(0);
+double stickTurn(0);
+
+double autoTray(0);
+double autoDrive(0);
+double autoTurn(0);
+double autoIntake(0);
+
+double buttonIntake(0);
+
+double rampDrive(0);
+
+double rampTurn(0);
+
+double lastTime(0);
+
+int intakeJammed(1);
+
+bool trayMoving(false);
+
+bool turboTurn(false);
+
+bool autoAbort(false);
 
 
+/*===========================================================================*/
 
+void turboTurnButton()
+{
+  turboTurn = !turboTurn;
+}
 
+void intakeFwd()
+{
+  if(intake.velocity(pct) > 80) buttonIntake = 0;
+  else buttonIntake = 100;
+}
 
-// A global instance of vex::brain used for printing to the V5 brain screen
-// A global instance of vex::competition
+void intakeRev()
+{
+  if(intake.velocity(pct) < -1) buttonIntake = 0;
+  else buttonIntake = -20;
+}
 
+void intakeFwdSlow()
+{
+  if(intake.velocity(pct) > 1 && intake.velocity(pct) < 80) buttonIntake = 0;
+  else buttonIntake = 20;
+}
 
-// define your global instances of motors and other devices here
-
-//Menu
-  #define green color(0x00ff00)
-  #define red color(0xFF0000)
-  #define blue color(0x0000FF)
-  #define yellow color(0xFFFF00)
-  #define fontColor color(white)
-  #define iconOutlineColor color(white)
-  #define backgroundColor color(0x666666)
-  #define buttonColor color(0x191919)
-  #define pathColor color(0x2F3136)
-
-  #define folder 0
-  #define auton 1
-  #define sSwitch 2
-  #define sSlider 3
-
-
-
-  // void sdCard() {
-  //   if (Brain.SDcard.isInserted()) {
-
-  //   }
-  //   else
-  // }
-
-  bool preAuton = true;
-  bool screenPressed = false;
-  // bool edgeTrigger = Brain.Screen.pressing() && !screenPressed;
-  int currentMenu = 0;
-  int currentPage = 0;
-  struct Page {
-    int parentPageNumber;
-    int buttonOnePageNumber;
-    int buttonTwoPageNumber;
-    int buttonThreePageNumber;
-    int buttonFourPageNumber;
-    int pageType;
-    color pageColor;
-    const char *name;
-    const char *description;
-    bool switchState;
-    int sliderPct;
-  };
-  Page pages[41] = {
-  ////////    p, b1, b2, b3, b4,    type,  color,                "name",                    "description",  swSt,  sP
-  /*  0 */  { 0,  1,  2,  3,  4,  folder, __null,                    ""},
-  /*  1 */  { 0,  5,  6,  7,  0,  folder,    red,                 "Red"},
-  /*  2 */  { 0,  0,  0,  0,  0,  folder,   blue,                "Blue"},
-  /*  3 */  { 0,  8,  0,  0,  0,  folder, yellow,              "Skills"},
-  /*  4 */  { 0,  9, 10, 11,  0,  folder,  green,               "Other"},
-  /*  5 */  { 1,  0,  0,  0,  0,   auton,    red,           "Auton One",                           "Huey"},  
-  /*  6 */  { 1,  0,  0,  0,  0,   auton,    red,           "Auton Two",                          "Dewey"},
-  /*  7 */  { 1,  0,  0,  0,  0,   auton,    red,         "Auton Three",                          "\"The third one\""},
-  /*  8 */  { 3,  0,  0,  0,  0,   auton, yellow,          "Skills one",             "Does skills stuff."},
-  /*  9 */  { 4, 12, 13, 14, 15,  folder,  green,            "Settings"},
-  /* 10 */  { 4,  0,  0,  0,  0,   auton,  green,                "None",                  "Does nothing."},
-  /* 11 */  { 4,  0,  0,  0,  0,   auton,  green, "Random test program",                "Self destructs."},
-  /* 12 */  {9,  0,  0,  0,  0, sSlider,  green,      "Useless slider",                    "Is useless.", false,  57},
-  /* 13 */  {9,  0,  0,  0,  0, sSwitch,  green,       "Self destruct", "Toggles self dectruct feature.",  true},
-  /* 14 */  {9,  0,  0,  0,  0, sSwitch,  green,                 "Win",         "Toggles match outcome.", false},  
-  /* 15 */  {9,  0,  0,  0,  0, sSwitch,  green,              "Flight",        "Toggles ability to fly.", false},  
-  /* 16 */  
-  /* 17 */  
-  /* 18 */  
-  /* 19 */  
-  /* 20 */  
-  /* 21 */    
-  /* 22 */  
-  /* 23 */  
-  /* 24 */    
-  /* 25 */  
-  /* 26 */  
-  /* 27 */  
-  /* 28 */    
-  /* 29 */  
-  /* 30 */  
-  /* 31 */    
-  /* 32 */  
-  /* 33 */  
-  /* 34 */  
-  /* 35 */  
-  /* 36 */  
-  /* 37 */  
-  /* 38 */  
-  /* 39 */  
-  /* 40 */  
-  ////////    p, b1, b2, b3, b4,    type,  color,                "name",                    "description",  swSt,  sP
-  };
-
-  void menuDrawIcon(int iconX, int iconY, int iconType, color iconColor) {
-    Brain.Screen.setPenColor(iconOutlineColor);
-    Brain.Screen.setPenWidth(0);
-    if (iconType == folder) { // File
-      Brain.Screen.drawRectangle(4+iconX, 4+iconY, 32, 12, iconColor);
-      Brain.Screen.setPenWidth(4);
-      Brain.Screen.drawLine(0+iconX, 2+iconY, 18+iconX, 2+iconY);
-      Brain.Screen.drawLine(17+iconX, 2+iconY, 21+iconX, 6+iconY);
-      Brain.Screen.drawLine(19+iconX, 6+iconY, 39+iconX, 6+iconY);
-      Brain.Screen.drawLine(38+iconX, 4+iconY, 38+iconX, 39+iconY);
-      Brain.Screen.drawLine(0+iconX, 38+iconY, 39+iconX, 38+iconY);
-      Brain.Screen.drawLine(2+iconX, 39+iconY, 2+iconX, 0+iconY);
-      Brain.Screen.drawLine(0+iconX, 18+iconY, 17+iconX, 18+iconY);
-      Brain.Screen.drawLine(16+iconX, 18+iconY, 20+iconX, 14+iconY);
-      Brain.Screen.drawLine(19+iconX, 14+iconY, 39+iconX, 14+iconY);
-    } else if (iconType == auton) { // Folder
-      Brain.Screen.drawRectangle(7+iconX, 4+iconY, 15, 32, iconColor);
-      Brain.Screen.drawRectangle(22+iconX, 15+iconY, 11, 21, iconColor);
-      Brain.Screen.setPenWidth(4);
-      Brain.Screen.drawLine(3+iconX, 2+iconY, 26+iconX, 2+iconY);
-      Brain.Screen.drawLine(5+iconX, 0+iconY, 5+iconX, 39+iconY);
-      Brain.Screen.drawLine(3+iconX, 38+iconY, 36+iconX, 38+iconY);
-      Brain.Screen.drawLine(35+iconX, 10+iconY, 35+iconX, 39+iconY);
-      Brain.Screen.drawLine(24+iconX, 1+iconY, 34+iconX, 11+iconY);
-      Brain.Screen.drawLine(24+iconX, 2+iconY, 24+iconX, 14+iconY);
-      Brain.Screen.drawLine(22+iconX, 13+iconY, 36+iconX, 13+iconY);
-      Brain.Screen.drawLine(10+iconX, 11+iconY, 19+iconX, 11+iconY);
-      Brain.Screen.drawLine(10+iconX, 20+iconY, 30+iconX, 20+iconY);
-      Brain.Screen.drawLine(10+iconX, 29+iconY, 30+iconX, 29+iconY);
-    } else if (iconType == sSwitch || sSlider){
-      Brain.Screen.drawImageFromFile("iconSettings.png", 0+iconX, 0+iconY);
-    }
-  }
-
-  void menuNavBar(int pathPosition, bool iconClose) {
-    std::string pathText("");
-    if (pathPosition == 0) pathText = "/";
-    else {
-      while(pathPosition != 0){
-      pathText = "/" + std::string(pages[pathPosition].name) + pathText;
-      pathPosition = pages[pathPosition].parentPageNumber;
+void trayUp()
+  {
+    if(!trayMoving) {
+      trayMoving = true;
+      while (tray.position(deg) < 300 && !autoAbort) 
+      {
+        autoTray = ( tray.position(deg) * -0.1 + 100 );
+        vex::task::sleep(20);
       }
-    }
-    Brain.Screen.setPenWidth(0); // Remove outline
-    Brain.Screen.drawRectangle(0, 0, 50, 32, color(buttonColor)); // Draw up button
-    Brain.Screen.drawRectangle(430, 0, 50, 32, color(buttonColor)); // Draw home button
-    Brain.Screen.drawRectangle(60, 0, 360, 32, color(pathColor)); // Draw path button
-    Brain.Screen.setPenColor(fontColor); // Set text color
-    Brain.Screen.setFont(fontType::prop20);
-    Brain.Screen.printAt(68, 22, false, pathText.c_str()); // Print path button text
-    if (iconClose) Brain.Screen.drawImageFromFile("iconClose.png", 9, 0);
-    else Brain.Screen.drawImageFromFile("iconUp.png", 9, 0);
-    Brain.Screen.drawImageFromFile("iconHome.png", 439, 0);
-  }
-
-  void menuButton(int buttonNumber, int buttonPageNumber) {
-  if (buttonPageNumber != 0) {
-      Brain.Screen.setPenWidth(0); // Remove outline
-      Brain.Screen.drawRectangle(60, 42+50*(buttonNumber-1), 411, 40, color(buttonColor)); // Draw button
-      
-      menuDrawIcon(10, 42+50*(buttonNumber-1), pages[buttonPageNumber].pageType, pages[buttonPageNumber].pageColor);
-
-      Brain.Screen.setPenColor(fontColor); // Set text color
-      Brain.Screen.setFont(fontType::prop30);
-      Brain.Screen.printAt(68, 72+50*(buttonNumber-1), false, pages[buttonPageNumber].name);
-    }
-  }
-
-  void menuFolder() {
-    Brain.Screen.setPenWidth(0); // Remove outline
-    Brain.Screen.drawRectangle(0, 0, 480, 240, color(backgroundColor)); // Draw background
-
-    menuNavBar(currentPage, false);
-
-    menuButton(1, pages[currentPage].buttonOnePageNumber); // Print button one
-    menuButton(2, pages[currentPage].buttonTwoPageNumber); // Print button two
-    menuButton(3, pages[currentPage].buttonThreePageNumber); // Print button three
-    menuButton(4, pages[currentPage].buttonFourPageNumber); // Print button four
-  }
-
-  void menuAuton() {
-    menuButton(1, currentPage);
-    Brain.Screen.setPenWidth(0); // Remove outline
-    Brain.Screen.drawRectangle(10, 92, 460, 140, color(buttonColor));
-    Brain.Screen.setFont(fontType::prop20);
-    Brain.Screen.printAt(20, 115, false, pages[currentPage].description);
-    menuNavBar(pages[currentPage].parentPageNumber, true);
-  }
-
-  void menusSwitch() {
-    menuFolder();
-    Brain.Screen.setPenWidth(0); // Remove outline
-    Brain.Screen.drawRectangle(10, 142, 460, 90, color(buttonColor));
-    menuButton(1, currentPage);
-    Brain.Screen.setFont(fontType::prop20);
-    Brain.Screen.printAt(20, 165, false, pages[currentPage].description);
-    menuNavBar(pages[currentPage].parentPageNumber, true);
-    if (pages[currentPage].switchState) Brain.Screen.drawImageFromFile("iconOn.png", 10, 92);
-    else Brain.Screen.drawImageFromFile("iconOff.png", 10, 92);
-  }
-
-  // void menuSlider(int menuSliderPct) {
-  //   int sliderX(10);
-  //   int sliderY(92); 
-  //   Brain.Screen.setPenWidth(0);
-  //   Brain.Screen.setPenColor(white);
-  //   Brain.Screen.drawRectangle(sliderX + 50, sliderY + 15, (menuSliderPct * 3.5), 10, white);
-  //   Brain.Screen.drawRectangle(sliderX + 50 + (menuSliderPct * 3.5), sliderY + 15, 350 - (menuSliderPct * 3.5), 10, pathColor);
-  //   Brain.Screen.drawCircle(sliderX + 50 + (menuSliderPct * 3.5), sliderY + 20, 10, buttonColor);
-  //   Brain.Screen.printAt(sliderX, sliderY + 11, false, "%d",  menuSliderPct); // Print settings
-  //   if ((Brain.Screen.xPosition() - 60) / 3.5 >= 0 && (Brain.Screen.xPosition() - 60) / 3.5 <= 100)
-  //   pages[currentPage].sliderPct = (Brain.Screen.xPosition() - 60) / 3.5;
-  // }
-
-  void menusSlider() {
-    menuFolder();
-    menuButton(1, currentPage);
-
-    if (pages[currentPage].sliderPct < 0) pages[currentPage].sliderPct = 0;
-    else if (pages[currentPage].sliderPct > 100) pages[currentPage].sliderPct = 100;
-
-    Brain.Screen.setPenWidth(0); // Remove outline
-    Brain.Screen.drawRectangle( 110, 92, pages[currentPage].sliderPct * 2.6, 40, color(buttonColor));
-    Brain.Screen.setPenWidth(2); // Set outline
-    Brain.Screen.drawRectangle( 110, 92, 260, 40, color(transparent));
-
-    Brain.Screen.setPenWidth(0); // Remove outline
-    Brain.Screen.drawRectangle( 10, 92, 40, 40, color(buttonColor));
-    Brain.Screen.drawRectangle( 60, 92, 40, 40, color(buttonColor));
-    Brain.Screen.drawRectangle(380, 92, 40, 40, color(buttonColor));
-    Brain.Screen.drawRectangle(430, 92, 40, 40, color(buttonColor));
-
-    Brain.Screen.setFont(fontType::prop20);
-    Brain.Screen.printAt(17, 120, false, "-10");
-    Brain.Screen.printAt(74, 120, false, "-1");
-    Brain.Screen.printAt(390, 120, false, "+1");
-    Brain.Screen.printAt(433, 120, false, "+10");
-
-
-    Brain.Screen.setFont(fontType::mono30);
-    Brain.Screen.printAt(230, 120, false, "%d%%", pages[currentPage].sliderPct);
-
-    Brain.Screen.drawRectangle(10, 142, 460, 90, color(buttonColor));
-    Brain.Screen.setFont(fontType::prop20);
-    Brain.Screen.printAt(20, 165, false, pages[currentPage].description);
-    menuNavBar(currentPage, true);
-  }
-
-  void menuLcdDraw() {
-    if      (pages[currentPage].pageType == auton)         menuAuton();
-    else if (pages[currentPage].pageType == folder)        menuFolder();
-    else if (pages[currentPage].pageType == sSwitch) menusSwitch();
-    else if (pages[currentPage].pageType == sSlider) menusSlider();
-  }
-
-  int selectedAuton() {
-    // Brain.SDcard.loadfile("lastAuton", selectedAuton, 2);
-    switch(currentPage){ 
-      case  5: return  5;
-      case  6: return  6;
-      case  7: return  7;
-      case  8: return  8;
-      case 11: return 11;
-      default: return 10;
-      // Brain.SDcard.("lastAuton", selectedAuton, 2);
-
-    }
-  }
-
-  void controllerDraw() {
-    Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.clearLine(3);
-    // Controller.Screen.print("");
-    Controller1.Screen.print(pages[selectedAuton()].name);
-    // Controller.Screen.print(pages[currentPage].name);
-  }
-
-  void menuLcdTouch() {
-    if (Brain.Screen.pressing() && !screenPressed) {
-      screenPressed = true;
-
-      if (Brain.Screen.xPosition() < 47 && Brain.Screen.yPosition() < 32) {
-        currentPage = pages[currentPage].parentPageNumber; // Up
-      } else if (Brain.Screen.xPosition() > 433 && Brain.Screen.yPosition() < 32) {
-        currentPage = 0; // Home
+      while (tray.position(deg) < 750) 
+      {
+        autoTray = ( tray.position(deg) * -0.1 + 100 );
+        autoIntake = 50;
+        vex::task::sleep(20);
       }
-      if (pages[currentPage].pageType == folder) {
-        if      (pages[currentPage].buttonOnePageNumber   != 0 && Brain.Screen.yPosition() >  42 && Brain.Screen.yPosition() <  82) currentPage = pages[currentPage].buttonOnePageNumber; // Button one
-        else if (pages[currentPage].buttonTwoPageNumber   != 0 && Brain.Screen.yPosition() >  92 && Brain.Screen.yPosition() < 132) currentPage = pages[currentPage].buttonTwoPageNumber; // Button two
-        else if (pages[currentPage].buttonThreePageNumber != 0 && Brain.Screen.yPosition() > 142 && Brain.Screen.yPosition() < 182) currentPage = pages[currentPage].buttonThreePageNumber; // Button three
-        else if (pages[currentPage].buttonFourPageNumber  != 0 && Brain.Screen.yPosition() > 192 && Brain.Screen.yPosition() < 232) currentPage = pages[currentPage].buttonFourPageNumber; // Button four
-      } else if (pages[currentPage].pageType == sSwitch) {
-        if      (Brain.Screen.yPosition() > 87 && Brain.Screen.yPosition() < 137) pages[currentPage].switchState = !pages[currentPage].switchState;
-      } else if (pages[currentPage].pageType == sSlider) {
-        if      (Brain.Screen.yPosition() > 92 && Brain.Screen.yPosition() < 132) {
-          if      (Brain.Screen.xPosition() >   10 && Brain.Screen.xPosition() < 50) pages[currentPage].sliderPct = pages[currentPage].sliderPct - 10;
-          else if (Brain.Screen.xPosition() >   60 && Brain.Screen.xPosition() < 100) pages[currentPage].sliderPct = pages[currentPage].sliderPct -  1;
-          else if (Brain.Screen.xPosition() > 380 && Brain.Screen.xPosition() < 420) pages[currentPage].sliderPct = pages[currentPage].sliderPct +  1;
-          else if (Brain.Screen.xPosition() > 430 && Brain.Screen.xPosition() < 470) pages[currentPage].sliderPct = pages[currentPage].sliderPct + 10;
-        }
-      }
-      menuLcdDraw();
-      controllerDraw();
-      Brain.Screen.render();
-    } else if (!Brain.Screen.pressing() && screenPressed) {
-      screenPressed = false;
-    }
+    autoTray = 0;
+    autoIntake = 0;
+    trayMoving = false;
   }
-//////
+}
+
+void trayDown()
+{
+  if(!trayMoving) {
+    trayMoving = true;
+    while (tray.position(deg) > 0 && !autoAbort) 
+    {
+      autoTray = ( ( tray.position(deg) * -0.07 + 100 ) * -1);
+      vex::task::sleep(20);
+    }
+      autoIntake = -50;
+      autoDrive = -25;
+          vex::task::sleep(400);
+    
+    autoTray = 0;
+    autoIntake = 0;
+    autoDrive = 0;
+    trayMoving = false;
+  }
+}
 
 
-/*---------------------------------------------------------------------------*/
-/*                          Pre-Autonomous Functions                         */
-/*                                                                           */
-/*  You may want to perform some actions before the competition starts.      */
-/*  Do them in the following function.  You must return from this function   */
-/*  or the autonomous and usercontrol tasks will not be started.  This       */
-/*  function is only called once after the cortex has been powered on and    */ 
-/*  not every time that the robot is disabled.                               */
-/*---------------------------------------------------------------------------*/
+/*===========================================================================*/
 
 void pre_auton( void ) {
-  // menuLcdDraw();
-  // controllerDraw();
-  // Brain.Screen.render();
-  // while (preAuton) {
-  //   menuLcdTouch();
-  // }
+  // Inertial.calibrate();
+  menuLcdDraw();
+  controllerDraw();
+  tray.setStopping(brake);
+  tray.setTimeout(3, seconds);
+  tray.setPosition(-66, deg);
+
+  Controller1.ButtonX.pressed(trayUp);
+  Controller1.ButtonA.pressed(trayDown);
+  Controller1.ButtonR2.pressed(intakeFwd);
+  Controller1.ButtonR1.pressed(intakeRev);
+  Controller1.ButtonY.pressed(intakeFwdSlow);
+  Controller1.ButtonDown.pressed(turboTurnButton);
+
+
+  // Drivetrain.setTimeout(3, seconds);
+  tray.setTimeout(3, seconds);
+  tray.setTimeout(3, seconds);
+
+  intake.setStopping(hold);
+
+  while (!Competition.isAutonomous() || !Competition.isEnabled()) {
+    menuLcdTouch();
+    vex::task::sleep(20);
+  }
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              Autonomous Task                              */
-/*                                                                           */
-/*  This task is used to control your robot during the autonomous phase of   */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+/*===========================================================================*/
 
 void autonomous( void ) {
-  // Brain.SDcard.appendfile("lastAuton", selectedAuton, 2);
-  // Brain.Screen.clearScreen();
+  vex::task::sleep(200);
+  autonIndicator();
+  // Drivetrain.driveFor(reverse, 2, inches, 50, rpm);
+  tray.spinToPosition(100, deg, 100, rpm);
+  tray.spinToPosition(0, deg, 100, rpm);
+  // intake.rotateFor(2, rev, 200, rpm);
+  vex::task::sleep(500); 
+  // Drivetrain.driveFor(fwd, 22, inches, 50, rpm);
+  // Drivetrain.driveFor(reverse, 5, inches, 50, rpm);
+  vex::task::sleep(3000);
+  return;
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+/*===========================================================================*/
 
 void usercontrol( void ) {
-  // User control code here, inside the loop
+  // Brain.loopTimer.
+  loopTime.reset();
+
   while (1) {
-      double axis3Prop = (pow(Controller1.Axis3.position(), 3) / 10000);
-      double axis4Prop = (pow(Controller1.Axis4.position(), 3) / 10000);
-      FrontLeftMotor.setBrake(brake);
-      FrontRightMotor.setBrake(brake);
-      BackLeftMotor.setBrake(brake);
-      BackRightMotor.setBrake(brake);
 
-          // (axis3+axis4)/3
-      FrontLeftMotor.spin  (vex::directionType::fwd, (axis3Prop - axis4Prop), vex::velocityUnits::pct); 
-      FrontRightMotor.spin (vex::directionType::fwd, (axis3Prop + axis4Prop), vex::velocityUnits::pct);
-      BackLeftMotor.spin   (vex::directionType::fwd, (axis3Prop - axis4Prop), vex::velocityUnits::pct); 
-      BackRightMotor.spin  (vex::directionType::fwd, (axis3Prop + axis4Prop), vex::velocityUnits::pct);
+    // if (Controller1.ButtonL1.pressing()) {
+    //   axis3Prop = (pow(Controller1.Axis3.position(), 3) / 10000 * 0.25);
+    //   axis1Prop = (pow(Controller1.Axis1.position(), 3) / 10000 * 0.25);
+    // } else if (Controller1.ButtonL2.pressing()) {
+    //   axis3Prop = (pow(Controller1.Axis3.position(), 3) / 10000 * 0.5);
+    //   axis1Prop = (pow(Controller1.Axis1.position(), 3) / 10000 * 0.5);
+    // } else {
+    //   axis3Prop = (pow(Controller1.Axis3.position(), 3) / 10000);
+    //   axis1Prop = (pow(Controller1.Axis1.position(), 3) / 10000);
+    //   // axis3Prop = (Controller1.Axis3.position());
+    //   // axis1Prop = (Controller1.Axis1.position());
+    // }
+    // axis3Prop = (pow(Controller1.Axis3.position(), 3) / 10000);
+
+    // if (turboTurn) Drivetrain.arcade(axis3Prop + autoDrive, axis1Prop);
+    // else Drivetrain.arcade(axis3Prop + autoDrive, axis1Prop* 0.25);
+
+    // if (axis3Prop + autoDrive > Drivetrain.velocity(pct) + 20) {
+    //   rampDrive = rampDrive + loopTime.time()/5;
+    // } else if (axis3Prop + autoDrive < Drivetrain.velocity(pct) - 20) {
+    //   rampDrive = rampDrive - loopTime.time()/5;
+    // } else if (axis3Prop + autoDrive <= Drivetrain.velocity(pct) + 20 && axis3Prop + autoDrive >= Drivetrain.velocity(pct) - 20) {
+    //   rampDrive = axis3Prop + autoDrive;
+    // }
+
+    // if (Controller1.ButtonUp.pressing()) 
+    // {
+    //   autoTurn = vision1.largestObject.centerX;
+    // }
 
 
-    // This is the main execution loop for the user control program.
-    // Each time through the loop your program should update motor + servo 
-    // values based on feedback from the joysticks.
 
-    // ........................................................................
-    // Insert user code here. This is where you use the joystick values to 
-    // update your motors, etc.
-    // ........................................................................
- 
+    // loopTime.reset();
+
+    if(leftIntakeSwitch.pressing() && rightIntakeSwitch.pressing() ){
+      intakeJammed = 1;
+    } else {
+      intakeJammed = -1;
+    }
+
+
+    stickForward = Controller1.Axis2.position();
+    stickSideways = Controller1.Axis1.position();
+    stickTurn = Controller1.Axis4.position() * (Controller1.Axis3.position() + 120) / 200;
+
+
+
+    frontRight.spin(fwd, stickForward - stickSideways - stickTurn, pct);
+    frontLeft.spin(fwd,  stickForward + stickSideways + stickTurn, pct);
+    backRight.spin(fwd,  stickForward + stickSideways - stickTurn, pct);
+    backLeft.spin(fwd,   stickForward - stickSideways + stickTurn, pct);
+
+    intakeLeft.spin(fwd, (Controller2.Axis3.position() + Controller2.Axis4.position() + buttonIntake + autoIntake) * intakeJammed, percent);
+    intakeRight.spin(fwd, (Controller2.Axis3.position() - Controller2.Axis4.position() + buttonIntake + autoIntake), percent);
+
+    tray.spin(fwd, Controller2.Axis2.position() + autoTray, percent);
+
+    if (intakeLeft.torque() > 1.05 || intakeRight.torque() > 1.05)
+    {
+      Controller1.rumble(".");
+      Controller2.rumble(".");
+
+    }
+
+    autoAbort = Controller1.ButtonRight.pressing();
+
+    Controller1.Screen.clearScreen();
+    Controller1.Screen.setCursor(1, 1);
+    Controller1.Screen.print(Controller1.Axis3.position());
+    Controller1.Screen.setCursor(2, 1);
+    Controller1.Screen.print(Controller1.Axis4.position());
+    Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.print(goalButton.pressing());
     vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 
   }
 }
 
-//
-// Main will set up the competition functions and callbacks.
-//
+/*===========================================================================*/
+
 int main() {
-    //Set up callbacks for autonomous and driver control periods.
-    Competition.autonomous( autonomous );
-    Competition.drivercontrol( usercontrol );
-    
-    //Run the pre-autonomous function. 
-    pre_auton();
-       
-    //Prevent main from exiting with an infinite loop.                        
-    while(1) {
-      vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
-    }    
+  vexcodeInit();
+  //Set up callbacks for autonomous and driver control periods.
+  Competition.autonomous( autonomous );
+  Competition.drivercontrol( usercontrol );
+  
+  //Run the pre-autonomous function. 
+  pre_auton();
+      
+  //Prevent main from exiting with an infinite loop.                        
+  while(1) {
+    vex::task::sleep(100);//Sleep the task for a short amount of time to prevent wasted resources.
+  }    
        
 }
