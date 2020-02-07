@@ -31,8 +31,15 @@ extern void menuLcdDraw();
 extern void controllerDraw();
 extern void menuLcdTouch();
 extern void autonIndicator();
-// extern int selectedAuton();
+extern int currentPage;
 
+extern void autonInitialize();
+extern void forwardFunction (double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
+extern void strafeFunction  (double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
+extern void turnFunction    (double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
+extern void autonStop();
+
+extern void autonRun(int auton);
 #include "robot-config.h"
 
 #define waitUntil(condition)                                                   \

@@ -9,8 +9,8 @@ brain  Brain;
 
 // VEXcode device constructors
 controller Controller1 = controller(primary);
-motor intakeLeft = motor(PORT3, ratio18_1, false);
-motor intakeRight = motor(PORT4, ratio18_1, true);
+motor intakeLeft = motor(PORT3, ratio18_1, true);
+motor intakeRight = motor(PORT4, ratio18_1, false);
 controller Controller2 = controller(partner);
 motor tray = motor(PORT7, ratio36_1, false);
 motor frontLeft = motor(PORT1, ratio18_1, false);
@@ -29,6 +29,7 @@ signature Vision__BLUE_GOAL = signature (5, -3107, -2499, -2803, 7801, 10955, 93
 code Vision__TEST = code (Vision__GREEN_CUBE, Vision__ORANGE_CUBE );
 vision Vision = vision (PORT6, 50, Vision__ORANGE_CUBE, Vision__GREEN_CUBE, Vision__PURPLE_CUBE, Vision__BLUE_GOAL);
 /*vex-vision-config:end*/
+inertial Inertial = inertial(PORT12);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
