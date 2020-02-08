@@ -2,20 +2,18 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// intakeLeft           motor         3               
-// intakeRight          motor         4               
+// intakeLeft           motor         12              
+// intakeRight          motor         13              
 // Controller2          controller                    
-// tray                 motor         7               
-// frontLeft            motor         1               
-// frontRight           motor         2               
-// backLeft             motor         9               
-// backRight            motor         10              
-// arms                 motor         8               
+// tray                 motor         21              
+// arms                 motor         14              
 // goalButton           bumper        A               
-// leftIntakeSwitch     limit         C               
-// rightIntakeSwitch    limit         D               
-// Vision               vision        6               
-// Inertial             inertial      12              
+// Inertial             inertial      2               
+// trayButton           bumper        E               
+// backLeft             motor         7               
+// frontLeft            motor         8               
+// backRight            motor         9               
+// frontRight           motor         10              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -65,6 +63,23 @@ bool autoAbort(false);
 
 
 /*===========================================================================*/
+
+int drivetrainTask()
+{
+  while(1)
+  {
+  double moveForward = forwardOutput + stickForward + autoDrive;
+  double moveStrafe  = strafeOutput  + stickStrafe;
+  double moveTurn    = turnOutput    + stickTurn;
+
+  frontRight.spin(fwd, moveForward - moveStrafe - moveTurn, pct);
+  frontLeft.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
+  backRight.spin(fwd,  moveForward + moveStrafe - moveTurn, pct);
+  backLeft.spin(fwd,   moveForward - moveStrafe + moveTurn, pct);
+  }
+
+  return(0);
+}
 
 void move (double moveForward, double moveStrafe, double moveTurn)
 {
@@ -130,7 +145,7 @@ void trayDown()
   if(!trayMoving) {
     trayMoving = true;
     buttonIntake = 0;
-    while (tray.position(deg) > 0 && !autoAbort) 
+    while (tray.position(deg) > 0 && !autoAbort)
     {
       autoTray = ( ( tray.position(deg) * -0.07 + 100 ) * -1);
       vex::task::sleep(20);
@@ -146,11 +161,36 @@ void trayDown()
   }
 }
 
+void armsHigh ()
+{
+  
+}
+
+void armsLow ()
+{
+  
+}
+
+void armsDown ()
+{
+  
+}
+
+void intakeAdvance ()
+{
+  
+}
+
 void auton()
 {
   autonInitialize();
 
-  autonRun(5);
+  forwardFunction( 0,  34, 5, 50, 3, true);
+  forwardFunction(34, -15, 5, 50, 3, true);
+  forwardFunction(19, -15, 5, 50, 3, false);
+  strafeFunction(  0, -24, 5, 50, 3, true);
+  forwardFunction( 4,  30, 5, 50, 3, true);
+
 
   autonStop();
 }
@@ -188,6 +228,8 @@ void pre_auton( void ) {
 
 
   Inertial.calibrate();
+
+  task task1 = task( drivetrainTask );
 
 
   while (!Competition.isAutonomous() || !Competition.isEnabled()) {
@@ -249,13 +291,8 @@ void usercontrol( void ) {
 
 
 
-    frontRight.spin(fwd, stickForward - stickStrafe - stickTurn, pct);
-    frontLeft.spin(fwd,  stickForward + stickStrafe + stickTurn, pct);
-    backRight.spin(fwd,  stickForward + stickStrafe - stickTurn, pct);
-    backLeft.spin(fwd,   stickForward - stickStrafe + stickTurn, pct);
-
-    intakeLeft.spin(fwd, (Controller2.Axis3.position() + Controller2.Axis4.position() + buttonIntake + autoIntake) * intakeJammed, percent);
-    intakeRight.spin(fwd, (Controller2.Axis3.position() - Controller2.Axis4.position() + buttonIntake + autoIntake), percent);
+    intakeLeft.spin(fwd, -1 * (Controller2.Axis3.position() + Controller2.Axis4.position() + buttonIntake + autoIntake) * intakeJammed, percent);
+    intakeRight.spin(fwd, -1 * (Controller2.Axis3.position() - Controller2.Axis4.position() + buttonIntake + autoIntake), percent);
 
     arms.spin(fwd, Controller2.Axis2.position(), pct);
 

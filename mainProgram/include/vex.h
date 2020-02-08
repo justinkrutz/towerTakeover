@@ -37,7 +37,12 @@ extern void autonInitialize();
 extern void forwardFunction (double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern void strafeFunction  (double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern void turnFunction    (double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
+extern double forwardOutput;
+extern double strafeOutput;
+extern double turnOutput;
 extern void autonStop();
+
+extern vex::motor_group intake;
 
 extern void autonRun(int auton);
 #include "robot-config.h"

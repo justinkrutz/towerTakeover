@@ -62,7 +62,7 @@ int forwardTask()
   {
     while(!forwardStruct.isMoving)
     {
-      forwardOutput = forwardStruct.position;
+      // forwardOutput = forwardStruct.position;
       vex::task::sleep(20);
     }
     vex::task::sleep(20);
@@ -74,6 +74,7 @@ int forwardTask()
     }
     forwardStruct.isMoving = false;
     forwardStruct.position = forwardStruct.position + forwardStruct.distance;
+    forwardOutput = 0;
   }
   return(0);
 }
@@ -95,18 +96,19 @@ int strafeTask()
   {
     while(!strafeStruct.isMoving)
     {
-      strafeOutput = strafeStruct.position;
+      // strafeOutput = strafeStruct.position;
       vex::task::sleep(20);
     }
     vex::task::sleep(20);
     while(fabs(strafeDistance - strafeStruct.position) < fabs(strafeStruct.distance))
     {
       strafeOutput = rampMath(fabs(strafeDistance - strafeStruct.position), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
-      strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance;
+      strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance * strafeSpeedP;
       vex::task::sleep(20);
     }
     strafeStruct.isMoving = false;
     strafeStruct.position = strafeStruct.position + strafeStruct.distance;
+    strafeOutput = 0;
   }
   return(0);
 }
@@ -128,7 +130,7 @@ int turnTask()
   {
     while(!turnStruct.isMoving)
     {
-      turnOutput = turnStruct.position - Inertial.yaw();
+      // turnOutput = turnStruct.position - Inertial.yaw();
       vex::task::sleep(20);
     }
     vex::task::sleep(20);
@@ -140,32 +142,17 @@ int turnTask()
     }
     turnStruct.isMoving = false;
     turnStruct.position = turnStruct.position + turnStruct.distance;
+    turnOutput = 0;
   }
   return(0);
 }
 
 /*===========================================================================*/
 
-int drivetrainTask()
-{
-  while(1)
-  {
-  double moveForward = forwardOutput;
-  double moveStrafe  = strafeOutput * strafeSpeedP;
-  double moveTurn    = turnOutput;
 
-  frontRight.spin(fwd, moveForward - moveStrafe - moveTurn, pct);
-  frontLeft.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
-  backRight.spin(fwd,  moveForward + moveStrafe - moveTurn, pct);
-  backLeft.spin(fwd,   moveForward - moveStrafe + moveTurn, pct);
-  }
-
-  return(0);
-}
 
 void autonInitialize()
 {
-  task task1 = task( drivetrainTask );
   task task2 = task( forwardTask );
   task task3 = task( strafeTask );
   task task4 = task( turnTask );
@@ -173,7 +160,6 @@ void autonInitialize()
 
 void autonStop()
 {
-  task::stop( drivetrainTask );
   task::stop( forwardTask );
   task::stop( strafeTask );
   task::stop( turnTask );
