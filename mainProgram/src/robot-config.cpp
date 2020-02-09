@@ -21,6 +21,10 @@ motor backLeft = motor(PORT7, ratio18_1, false);
 motor frontLeft = motor(PORT8, ratio18_1, false);
 motor backRight = motor(PORT9, ratio18_1, true);
 motor frontRight = motor(PORT10, ratio18_1, true);
+/*vex-vision-config:begin*/
+signature Vision__SIG_1 = signature (1, -251, 1377, 563, 8395, 10041, 9218, 5, 0);
+vision Vision = vision (PORT15, 100, Vision__SIG_1);
+/*vex-vision-config:end*/
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

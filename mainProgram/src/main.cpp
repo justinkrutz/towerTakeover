@@ -14,7 +14,9 @@
 // frontLeft            motor         8               
 // backRight            motor         9               
 // frontRight           motor         10              
-// ---- END VEXCODE CONFIGURED DEVICES ----
+// Vision               vision        15              
+// ---- END VEXCODE CONFIGURED DEVICES ----          
+
 
 #include "vex.h"
 
@@ -41,6 +43,7 @@ double stickStrafe(0);
 double stickTurn(0);
 
 double autoTray(0);
+double autoArms(0);
 double autoDrive(0);
 double autoTurn(0);
 double autoIntake(0);
@@ -51,15 +54,24 @@ double rampDrive(0);
 
 double rampTurn(0);
 
+double visionTurn(0);
+
 double lastTime(0);
 
 int intakeJammed(1);
 
 bool trayMoving(false);
 
+bool armsMoving(false);
+
 bool turboTurn(false);
 
 bool autoAbort(false);
+
+double trayStick (0);
+
+double armsStick (0);
+
 
 
 /*===========================================================================*/
@@ -70,7 +82,7 @@ int drivetrainTask()
   {
   double moveForward = forwardOutput + stickForward + autoDrive;
   double moveStrafe  = strafeOutput  + stickStrafe;
-  double moveTurn    = turnOutput    + stickTurn;
+  double moveTurn    = turnOutput    + stickTurn + visionTurn;
 
   frontRight.spin(fwd, moveForward - moveStrafe - moveTurn, pct);
   frontLeft.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
@@ -161,19 +173,38 @@ void trayDown()
   }
 }
 
-void armsHigh ()
+void armsUp ()
 {
-  
-}
-
-void armsLow ()
-{
-  
+  if(!armsMoving) {
+      armsMoving = true;
+      buttonIntake = 0;
+      while (arms.position(deg) < 750) 
+      {
+        autoArms = ( arms.position(deg) * -0.1 + 150 );
+        vex::task::sleep(20);
+      }
+    autoArms = 0;
+    armsMoving = false;
+    arms.stop(hold);
+  }
 }
 
 void armsDown ()
 {
-  
+    if(!armsMoving) {
+    armsMoving = true;
+    buttonIntake = 0;
+    while (arms.position(deg) > 0 && !autoAbort)
+    {
+      autoArms = ( ( arms.position(deg) * -0.07 + 100 ) * -1);
+      vex::task::sleep(20);
+    }
+    autoArms = 0;
+    autoIntake = 0;
+    autoDrive = 0;
+    armsMoving = false;
+  arms.stop(brake);
+  }
 }
 
 void intakeAdvance ()
@@ -212,8 +243,8 @@ void pre_auton( void ) {
   Controller1.ButtonR1.pressed(intakeRev);
   Controller1.ButtonL2.pressed(intakeFwdSlow);
   Controller1.ButtonL1.pressed(intakeRevSlow);
-  Controller1.ButtonY.pressed(intakeFwdSlow);
-  Controller1.ButtonRight.pressed(auton);
+  Controller1.ButtonUp.pressed(armsUp);
+  // Controller1.ButtonY.pressed(autoAbort);
 
 
 
@@ -291,12 +322,28 @@ void usercontrol( void ) {
 
 
 
-    intakeLeft.spin(fwd, -1 * (Controller2.Axis3.position() + Controller2.Axis4.position() + buttonIntake + autoIntake) * intakeJammed, percent);
-    intakeRight.spin(fwd, -1 * (Controller2.Axis3.position() - Controller2.Axis4.position() + buttonIntake + autoIntake), percent);
+    intakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + buttonIntake + autoIntake) * intakeJammed, percent);
+    intakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + buttonIntake + autoIntake), percent);
 
-    arms.spin(fwd, Controller2.Axis2.position(), pct);
 
-    tray.spin(fwd, autoTray, percent);
+    if(Controller2.Axis2.position() < - 5 || Controller2.Axis2.position() > 5)
+    {
+      if(Controller2.ButtonR2.pressing()) 
+      {
+        trayStick = Controller2.Axis2.position();
+      } else {
+        trayStick = 0;
+        armsStick = Controller2.Axis2.position();
+      }
+    } else {
+      trayStick = 0;
+      armsStick = 0;
+    }
+
+    arms.spin(fwd, armsStick + autoArms, pct);
+
+
+    tray.spin(fwd, autoTray + trayStick, percent);
 
     if (intakeLeft.torque() > 1.05 || intakeRight.torque() > 1.05)
     {
@@ -305,15 +352,23 @@ void usercontrol( void ) {
 
     }
 
-    autoAbort = Controller1.ButtonRight.pressing();
+    autoAbort = Controller1.ButtonY.pressing();
 
-    // Controller1.Screen.clearScreen();
-    // Controller1.Screen.setCursor(1, 1);
-    // Controller1.Screen.print(autoAbort);
-    // Controller1.Screen.setCursor(2, 1);
-    // Controller1.Screen.print(intakeLeft.temperature(pct));
-    // Controller1.Screen.setCursor(3, 1);
-    // Controller1.Screen.print(intakeRight.temperature(pct));
+    Vision.takeSnapshot(Vision__SIG_1);
+
+    if (Controller1.ButtonB.pressing() && Vision.largestObject.height < 100) {
+      visionTurn = -(Vision.largestObject.centerX - 165) * 0.5;
+    } else {
+      visionTurn = 0;
+    }
+
+    Controller1.Screen.clearScreen();
+    Controller1.Screen.setCursor(1, 1);
+    Controller1.Screen.print(Vision.largestObject.centerX);
+    Controller1.Screen.setCursor(2, 1);
+    Controller1.Screen.print(Vision.objectCount);
+    Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.print(Vision.largestObject.height);
     vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 
   }
 }
