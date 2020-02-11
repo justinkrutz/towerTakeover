@@ -52,9 +52,6 @@ double autoArms(0);
 double autoDrive(0);
 double autoTurn(0);
 double autoIntake(0);
-double autoIntakeSpin(0);
-
-double buttonIntake(0);
 
 double rampDrive(0);
 
@@ -101,42 +98,42 @@ int drivetrainTask()
 
 void intakeSpin(double degrees, double percent)
 {
-  double pos = fabs(intake.position(deg));
-  autoIntakeSpin = percent;
-  waitUntil(autoAbort || fabs(intake.position(deg)) - pos > fabs(degrees));
-  autoIntakeSpin = 0;
+  double pos = intake.position(deg);
+  autoIntake = percent;
+  waitUntil(autoAbort || fabs(intake.position(deg) - pos) > fabs(degrees));
+  autoIntake = 0;
 }
 
 
 void intakeIn()
 {
-  if(buttonIntake == 100) buttonIntake = 0;
-  else buttonIntake = 100;
+  if(autoIntake == 100) autoIntake = 0;
+  else autoIntake = 100;
 }
 
 void intakeOut()
 {
-  if(buttonIntake == -100) buttonIntake = 0;
-  else buttonIntake = -100;
+  if(autoIntake == -100) autoIntake = 0;
+  else autoIntake = -100;
 }
 
 void intakeInSlow()
 {
-  if(buttonIntake == 20) buttonIntake = 0;
-  else buttonIntake = 20;
+  if(autoIntake == 20) autoIntake = 0;
+  else autoIntake = 20;
 }
 
 void intakeOutSlow()
 {
-  if(buttonIntake == -20) buttonIntake = 0;
-  else buttonIntake = -20;
+  if(autoIntake == -20) autoIntake = 0;
+  else autoIntake = -20;
 
 }
 
 void trayUp() {
     if(!trayMoving) {
       trayMoving = true;
-      buttonIntake = 0;
+      autoIntake = 0;
       while (tray.position(deg) < 750 && !autoAbort) {
         autoTray = ( tray.position(deg) * -0.1 + 100 );
         if (tray.position(deg) < 300) {
@@ -154,7 +151,7 @@ void trayDown()
 {
   if(!trayMoving) {
     trayMoving = true;
-    buttonIntake = 0;
+    autoIntake = 0;
     while (tray.position(deg) > 0 && !autoAbort){
       autoTray = ( ( tray.position(deg) * -0.07 + 100 ) * -1);
       vex::task::sleep(20);
@@ -171,45 +168,11 @@ void trayDown()
   }
 }
 
-void armsHigh ()
-{
-  if(!armsMoving) {
-      armsMoving = true;
-      buttonIntake = 0;
-      while (arms.position(deg) < 900 && !autoAbort) 
-      {
-        autoArms = ( arms.position(deg) * -0.1 + 150 );
-        vex::task::sleep(20);
-      }
-    autoArms = 0;
-    armsMoving = false;
-    arms.stop(hold);
-    armsPos = high;
-  }
-}
-
-void armsLow ()
-{
-  if(!armsMoving) {
-      armsMoving = true;
-      buttonIntake = 0;
-      while (arms.position(deg) < 750 && !autoAbort) 
-      {
-        autoArms = ( arms.position(deg) * -0.1 + 150 );
-        vex::task::sleep(20);
-      }
-    autoArms = 0;
-    armsMoving = false;
-    arms.stop(hold);
-    armsPos = low;
-  }
-}
-
 void armsDown ()
 {
     if(!armsMoving) {
     armsMoving = true;
-    buttonIntake = 0;
+    autoIntake = 0;
     while (arms.position(deg) > 0 && !autoAbort)
     {
       autoArms = ( ( arms.position(deg) * -0.07 + 100 ) * -1);
@@ -224,20 +187,52 @@ void armsDown ()
   }
 }
 
-void intakeAdvance ()
+void armsHigh ()
 {
-  switch(armsPos) {
-    case down:
+  if(!armsMoving) {
+    if(armsPos == down) {
+      armsMoving = true;
+      autoIntake = 0;
       intakeSpin(180, -100);
-    break;
-    case low:
-      intakeSpin(360, -100);
-    break;
-    case high:
-      intakeSpin(360, -100);
-      autoArms = -30;
+      while (arms.position(deg) < 950 && !autoAbort) 
+      {
+        autoArms = ( arms.position(deg) * -0.1 + 150 );
+        vex::task::sleep(20);
+      }
+      autoArms = 0;
+      armsMoving = false;
+      arms.stop(hold);
+      armsPos = high;
+    } else {
+      // intakeSpin(20, -100);
+      autoArms = -75;
+      intakeSpin(180, -100);
       waitUntil(autoAbort || arms.position(deg) < 750);
-    break;
+      autoArms = 0;
+      armsDown();
+    }
+  }
+}
+
+void armsLow ()
+{
+  if(!armsMoving) { // are the arms moving?
+    if(armsPos == down) {
+      armsMoving = true;
+      autoIntake = 0;
+      intakeSpin(180, -100);
+      while (arms.position(deg) < 750 && !autoAbort) {
+        autoArms = ( arms.position(deg) * -0.1 + 150 );
+        vex::task::sleep(20);
+      }
+      autoArms = 0;
+      armsMoving = false;
+      arms.stop(hold);
+      armsPos = low;
+    } else {
+      intakeSpin(360, -100);
+      armsDown();
+    }
   }
 }
 
@@ -255,23 +250,55 @@ void auton()
   autonStop();
 }
 
+double visionDetect ()
+{
+  if (Vision.objectCount > 0 && Vision.largestObject.height > 30) {
+    return (Vision.largestObject.centerX - 165) * 0.5;
+  } else {
+    return 0;
+  }
+}
+
 void visionSteerFunction ()
 {
+  double green;
+  double orange;
+  double purple;
+  double tempSteer;
   Inertial.resetRotation();
-  Vision.takeSnapshot(Vision__SIG_1);
   while (Controller1.ButtonL2.pressing()) {
+    Controller1.Screen.clearScreen();
+    
     Vision.takeSnapshot(Vision__SIG_1);
-    if (/*Inertial.yaw() < 25 && Inertial.yaw() > -25 && */ Vision.largestObject.height < 100) {
-      visionSteer = -(Vision.largestObject.centerX - 165) * 0.5;
-      autoIntake = 100;
-    } else {
-      visionSteer = 0;
-      autoIntake = 0;
-    }
+    Controller1.Screen.setCursor(1, 1);
+    Controller1.Screen.print(Vision.largestObject.height);
+    green = visionDetect();
+
+    Vision.takeSnapshot(Vision__SIG_2);
+    Controller1.Screen.setCursor(2, 1);
+    Controller1.Screen.print(Vision.largestObject.height);
+    orange = visionDetect();
+
+    Vision.takeSnapshot(Vision__SIG_3);
+    Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.print(Vision.largestObject.height);
+    purple = visionDetect();
+
+    tempSteer = green;
+    if (fabs(orange) > fabs(tempSteer)) tempSteer = orange;
+    if (fabs(purple) > fabs(tempSteer)) tempSteer = purple;
+
+    visionSteer = tempSteer;
+
   }
   visionSteer = 0;
-  autoIntake = 0;
+  // autoIntake = 0;
 
+}
+
+void trayReset ()
+{
+  tray.resetPosition();
 }
 
 
@@ -292,9 +319,10 @@ void pre_auton( void ) {
   Controller1.ButtonL2.pressed(visionSteerFunction);
   Controller1.ButtonR1.pressed(intakeOutSlow);
   Controller1.ButtonUp.pressed(armsHigh);
-  Controller1.ButtonLeft.pressed(armsLow);
-  Controller1.ButtonDown.pressed(armsDown);
-  Controller1.ButtonRight.pressed(intakeAdvance);
+  Controller1.ButtonDown.pressed(armsLow);
+
+
+  Controller2.ButtonX.pressed(trayReset);
 
 
 
@@ -368,12 +396,12 @@ void usercontrol( void ) {
 
     stickForward = Controller1.Axis2.position();
     stickStrafe = Controller1.Axis1.position() * strafeSpeedP;
-    stickTurn = Controller1.Axis4.position() * (Controller1.Axis3.position() + 120) / 200;
+    stickTurn = Controller1.Axis4.position() * (Controller1.Axis3.position() + 150) / 200;
 
 
 
-    intakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + buttonIntake + autoIntake + autoIntakeSpin), percent);
-    intakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + buttonIntake + autoIntake + autoIntakeSpin), percent);
+    intakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
+    intakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
 
 
     if(Controller2.Axis2.position() < - 5 || Controller2.Axis2.position() > 5)
@@ -404,13 +432,7 @@ void usercontrol( void ) {
 
     autoAbort = Controller1.ButtonL1.pressing();
 
-    Controller1.Screen.clearScreen();
-    Controller1.Screen.setCursor(1, 1);
-    Controller1.Screen.print(autoIntakeSpin);
-    Controller1.Screen.setCursor(2, 1);
-    Controller1.Screen.print(buttonIntake);
-    Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print(Vision.largestObject.height);
+
     vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 
   }
 }
