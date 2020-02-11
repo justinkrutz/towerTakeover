@@ -53,7 +53,7 @@ Page pages[41] = {
   /*  3 */  { 0,  8,  0,  0,  0,   folder,  yellow,              "Skills"}, 
   /*  4 */  { 0,  9, 10, 11,  0,   folder,   green,               "Other"}, 
   /*  5 */  { 1,  0,  0,  0,  0,    auton,     red,          "Small goal",                  "Scores X cubes in small red goal"},
-  /*  6 */  { 1,  0,  0,  0,  0,    auton,     red,          "Large goal",                  "Scores X cubes in small red goal"},
+  /*  6 */  { 1,  0,  0,  0,  0,    auton,     red,          "Large goal",                  "Scores X cubes in large red goal"},
   /*  7 */  { 1,  0,  0,  0,  0,    auton,     red,                    "",                                                  ""},
   /*  8 */  { 3,  0,  0,  0,  0,    auton,  yellow,          "Skills one",                                "Does skills stuff."},
   /*  9 */  { 4, 12, 13, 14, 15,   folder,   green,            "Settings"},                   
@@ -63,8 +63,8 @@ Page pages[41] = {
   /* 13 */  { 9,  0,  0,  0,  0,  sSwitch,   green,       "Self destruct",                    "Toggles self dectruct feature.",  true},
   /* 14 */  { 9,  0,  0,  0,  0,  sSwitch,   green,                 "Win",                            "Toggles match outcome.", false},  
   /* 15 */  { 9,  0,  0,  0,  0,  sSwitch,   green,              "Flight",                           "Toggles ability to fly.", false},  
-  /* 16 */  { 2,  0,  0,  0,  0,    auton,    blue,          "Small goal",                  "Scores X cubes in small blue goal"},
-  /* 17 */  { 2,  0,  0,  0,  0,    auton,    blue,          "Large goal",                  "Scores X cubes in small blue goal"},
+  /* 16 */  { 2,  0,  0,  0,  0,    auton,    blue,          "Small goal",                  "Scores 8 cubes in small blue goal"},
+  /* 17 */  { 2,  0,  0,  0,  0,    auton,    blue,          "Large goal",                  "Scores X cubes in large blue goal"},
   /* 18 */  
   /* 19 */  
   /* 20 */  

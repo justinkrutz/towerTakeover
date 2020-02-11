@@ -78,7 +78,7 @@ double armsStick (0);
 
 /*===========================================================================*/
 
-int drivetrainTask()
+int motorTask()
 {
   while(1)
   {
@@ -90,6 +90,11 @@ int drivetrainTask()
   frontLeft.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
   backRight.spin(fwd,  moveForward + moveStrafe - moveTurn, pct);
   backLeft.spin(fwd,   moveForward - moveStrafe + moveTurn, pct);
+
+  intakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
+  intakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
+  arms.spin(fwd, armsStick + autoArms, pct);
+  tray.spin(fwd, autoTray + trayStick, percent);
   }
 
   return(0);
@@ -136,8 +141,10 @@ void trayUp() {
       autoIntake = 0;
       while (tray.position(deg) < 750 && !autoAbort) {
         autoTray = ( tray.position(deg) * -0.1 + 100 );
-        if (tray.position(deg) < 300) {
+        if (tray.position(deg) < 600) {
           autoIntake = -5;
+        } else {
+          autoIntake = 0;
         }
         vex::task::sleep(20);
       }
@@ -159,7 +166,7 @@ void trayDown()
     autoIntake = -50;
     autoDrive = -25;
     double time = Brain.Timer;
-    waitUntil(autoAbort || Brain.Timer - time > 400);
+    waitUntil(autoAbort || Brain.Timer - time > 300);
   
     autoTray = 0;
     autoIntake = 0;
@@ -240,11 +247,11 @@ void auton()
 {
   autonInitialize();
 
-  forwardFunction( 0,  34, 5, 50, 3, true);
-  forwardFunction(34, -15, 5, 50, 3, true);
-  forwardFunction(19, -15, 5, 50, 3, false);
-  strafeFunction(  0, -24, 5, 50, 3, true);
-  forwardFunction( 4,  30, 5, 50, 3, true);
+  forwardFunction( 34, 5, 50, 3, true);
+  forwardFunction(-15, 5, 50, 3, true);
+  forwardFunction(-15, 5, 50, 3, false);
+  strafeFunction( -24, 5, 50, 3, true);
+  forwardFunction( 30, 5, 50, 3, true);
 
 
   autonStop();
@@ -271,17 +278,17 @@ void visionSteerFunction ()
     
     Vision.takeSnapshot(Vision__SIG_1);
     Controller1.Screen.setCursor(1, 1);
-    Controller1.Screen.print(Vision.largestObject.height);
+    Controller1.Screen.print("Green %d", Vision.largestObject.height);
     green = visionDetect();
 
     Vision.takeSnapshot(Vision__SIG_2);
     Controller1.Screen.setCursor(2, 1);
-    Controller1.Screen.print(Vision.largestObject.height);
+    Controller1.Screen.print("Orange %d", Vision.largestObject.height);
     orange = visionDetect();
 
     Vision.takeSnapshot(Vision__SIG_3);
     Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print(Vision.largestObject.height);
+    Controller1.Screen.print("Purple %d", Vision.largestObject.height);
     purple = visionDetect();
 
     tempSteer = green;
@@ -338,7 +345,7 @@ void pre_auton( void ) {
 
   Inertial.calibrate();
 
-  task task1 = task( drivetrainTask );
+  task task1 = task( motorTask );
 
 
   while (!Competition.isAutonomous() || !Competition.isEnabled()) {
@@ -400,8 +407,6 @@ void usercontrol( void ) {
 
 
 
-    intakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
-    intakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
 
 
     if(Controller2.Axis2.position() < - 5 || Controller2.Axis2.position() > 5)
@@ -418,10 +423,7 @@ void usercontrol( void ) {
       armsStick = 0;
     }
 
-    arms.spin(fwd, armsStick + autoArms, pct);
 
-
-    tray.spin(fwd, autoTray + trayStick, percent);
 
     if (intakeLeft.torque() > 1.05 || intakeRight.torque() > 1.05)
     {

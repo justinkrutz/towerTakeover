@@ -29,7 +29,6 @@ int rampMath(double input, double totalRange, int startOutput, int maxOutput, in
 
 struct rampStruct
 {
-  double position;
   double distance;
   int startSpeed;
   int maxSpeed;
@@ -47,9 +46,9 @@ double turnOutput;
 
 /*===========================================================================*/
 
-void forwardFunction ( double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
+void forwardFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
 {
-  forwardStruct = {position, distance, startSpeed, maxSpeed, endSpeed, true};
+  forwardStruct = {distance, startSpeed, maxSpeed, endSpeed, true};
   if (waitForCompletion)
   {
     waitUntil(!forwardStruct.isMoving);
@@ -58,22 +57,18 @@ void forwardFunction ( double position, double distance,int startSpeed, int maxS
 
 int forwardTask()
 {
+  double startDistance;
   while(1)
   {
-    while(!forwardStruct.isMoving)
+    waitUntil(forwardStruct.isMoving);
+    startDistance = forwardDistance;
+    while(fabs(forwardDistance - startDistance) < fabs(forwardStruct.distance))
     {
-      // forwardOutput = forwardStruct.position;
-      vex::task::sleep(20);
-    }
-    vex::task::sleep(20);
-    while(fabs(forwardDistance - forwardStruct.position) < fabs(forwardStruct.distance))
-    {
-      forwardOutput = rampMath(fabs(forwardDistance - forwardStruct.position), fabs(forwardStruct.distance), forwardStruct.startSpeed, forwardStruct.maxSpeed,
+      forwardOutput = rampMath(fabs(forwardDistance - startDistance), fabs(forwardStruct.distance), forwardStruct.startSpeed, forwardStruct.maxSpeed,
       forwardStruct.endSpeed) * fabs(forwardStruct.distance) / forwardStruct.distance;
-      vex::task::sleep(20);
+      task::sleep(20);
     }
     forwardStruct.isMoving = false;
-    forwardStruct.position = forwardStruct.position + forwardStruct.distance;
     forwardOutput = 0;
   }
   return(0);
@@ -81,9 +76,9 @@ int forwardTask()
 
 /*===========================================================================*/
 
-void strafeFunction ( double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
+void strafeFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
 {
-  strafeStruct = {position, distance, startSpeed, maxSpeed, endSpeed, true};
+  strafeStruct = {distance, startSpeed, maxSpeed, endSpeed, true};
   if (waitForCompletion)
   {
     waitUntil(!strafeStruct.isMoving);
@@ -92,22 +87,18 @@ void strafeFunction ( double position, double distance,int startSpeed, int maxSp
 
 int strafeTask()
 {
+  double startDistance;
   while(1)
   {
-    while(!strafeStruct.isMoving)
+    waitUntil(strafeStruct.isMoving);
+    startDistance = strafeDistance;
+    while(fabs(strafeDistance - startDistance) < fabs(strafeStruct.distance))
     {
-      // strafeOutput = strafeStruct.position;
-      vex::task::sleep(20);
-    }
-    vex::task::sleep(20);
-    while(fabs(strafeDistance - strafeStruct.position) < fabs(strafeStruct.distance))
-    {
-      strafeOutput = rampMath(fabs(strafeDistance - strafeStruct.position), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
+      strafeOutput = rampMath(fabs(strafeDistance - startDistance), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
       strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance * strafeSpeedP;
-      vex::task::sleep(20);
+      task::sleep(20);
     }
     strafeStruct.isMoving = false;
-    strafeStruct.position = strafeStruct.position + strafeStruct.distance;
     strafeOutput = 0;
   }
   return(0);
@@ -115,9 +106,9 @@ int strafeTask()
 
 /*===========================================================================*/
 
-void turnFunction ( double position, double distance,int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
+void turnFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
 {
-  turnStruct = {position, distance, startSpeed, maxSpeed, endSpeed, true};
+  turnStruct = {distance, startSpeed, maxSpeed, endSpeed, true};
   if (waitForCompletion)
   {
     waitUntil(!turnStruct.isMoving);
@@ -126,22 +117,18 @@ void turnFunction ( double position, double distance,int startSpeed, int maxSpee
 
 int turnTask()
 {
+  double startYaw;
   while(1)
   {
-    while(!turnStruct.isMoving)
+    waitUntil(turnStruct.isMoving);
+    startYaw = Inertial.yaw();
+    while(fabs(Inertial.yaw() - startYaw) < fabs(turnStruct.distance))
     {
-      // turnOutput = turnStruct.position - Inertial.yaw();
-      vex::task::sleep(20);
-    }
-    vex::task::sleep(20);
-    while(fabs(Inertial.yaw() - turnStruct.position) < fabs(turnStruct.distance))
-    {
-      turnOutput = rampMath(fabs(Inertial.yaw() - turnStruct.position), fabs(turnStruct.distance), turnStruct.startSpeed, turnStruct.maxSpeed,
+      turnOutput = rampMath(fabs(Inertial.yaw() - startYaw), fabs(turnStruct.distance), turnStruct.startSpeed, turnStruct.maxSpeed,
       turnStruct.endSpeed, 0.2, 0.8) * fabs(turnStruct.distance) / turnStruct.distance;
-      vex::task::sleep(20);
+      task::sleep(20);
     }
     turnStruct.isMoving = false;
-    turnStruct.position = turnStruct.position + turnStruct.distance;
     turnOutput = 0;
   }
   return(0);
