@@ -14,9 +14,7 @@ motor intakeRight = motor(PORT13, ratio18_1, true);
 controller Controller2 = controller(partner);
 motor tray = motor(PORT21, ratio36_1, false);
 motor arms = motor(PORT14, ratio18_1, true);
-bumper goalButton = bumper(Brain.ThreeWirePort.A);
 inertial Inertial = inertial(PORT2);
-bumper trayButton = bumper(Brain.ThreeWirePort.E);
 motor backLeft = motor(PORT7, ratio18_1, false);
 motor frontLeft = motor(PORT8, ratio18_1, false);
 motor backRight = motor(PORT9, ratio18_1, true);
@@ -28,6 +26,9 @@ signature Vision__SIG_3 = signature (3, 313, 1063, 688, 4757, 6865, 5811, 3, 0);
 signature Vision__SIG_4 = signature (4, -2699, -2105, -2402, 7879, 9039, 8459, 4.3, 0);
 vision Vision = vision (PORT15, 100, Vision__SIG_1, Vision__SIG_2, Vision__SIG_3, Vision__SIG_4);
 /*vex-vision-config:end*/
+sonar RangeFinder = sonar(Brain.ThreeWirePort.G);
+line LineTracker = line(Brain.ThreeWirePort.E);
+led Flashlight = led(Brain.ThreeWirePort.F);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

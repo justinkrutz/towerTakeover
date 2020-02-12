@@ -11,9 +11,7 @@ extern motor intakeRight;
 extern controller Controller2;
 extern motor tray;
 extern motor arms;
-extern bumper goalButton;
 extern inertial Inertial;
-extern bumper trayButton;
 extern motor backLeft;
 extern motor frontLeft;
 extern motor backRight;
@@ -26,6 +24,9 @@ extern signature Vision__SIG_5;
 extern signature Vision__SIG_6;
 extern signature Vision__SIG_7;
 extern vision Vision;
+extern sonar RangeFinder;
+extern line LineTracker;
+extern led Flashlight;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Text.

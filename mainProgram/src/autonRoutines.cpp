@@ -41,21 +41,30 @@ void auton11()
 void blueSmallGoal()
 {
   autoIntake = 100;
-
-  forwardFunction(32, 20, 40, 5, true);
-  forwardFunction(-24, 20, 100, 5, false);
-  strafeFunction(-15, 20, 50, 50, true);
-  strafeFunction(-11, 20, 100, 5, true);
-  forwardFunction(26, 20, 40, 5, true);
-  turnFunction(-90, 20, 100, 5, false);
-  forwardFunction(-7, 20, 40, 5, true);
-  strafeFunction(-34, 20, 100, 5, true);
-  autoIntake = 0;
-  strafeFunction(-5, 5, 5, 5, false);
-  forwardFunction(10, 20, 75, 5, true);
-  intakeSpin(180, -100);
-  trayUp();
-  trayDown();
+  autoArms = -10;
+  wait(1, sec);
+  // forwardFunction(14, 20, 100, 25, true);
+  autoArms = 0;
+  wait(1, sec);
+  // forwardFunction(8, 25, 35, 25, true);
+  // forwardFunction(7, 25, 25, 5, false);
+  armsMove(60, 100);
+  wait(0.3, sec);
+  armsDown();
+  // wait(0.2, sec);
+  // forwardFunction(-24, 20, 100, 5, false);
+  // strafeFunction(-15, 20, 50, 50, true);
+  // strafeFunction(-11, 20, 100, 5, true);
+  // forwardFunction(27, 20, 35, 5, true);
+  // turnFunction(-90, 20, 100, 5, false);
+  // forwardFunction(-8, 20, 40, 5, true);
+  // strafeFunction(-34, 20, 100, 5, true);
+  // autoIntake = 0;
+  // strafeFunction(-5, 5, 5, 5, false);
+  // forwardFunction(10, 20, 75, 5, true);
+  // intakeSpin(180, -100);
+  // trayUp();
+  // trayDown();
 
 }
 

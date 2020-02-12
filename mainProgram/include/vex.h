@@ -51,6 +51,8 @@ extern double autoIntake;
 extern void trayUp();
 extern void trayDown();
 extern void intakeSpin(double degrees, double percent);
+extern void armsMove (double degrees, double percent, vex::brakeType brakeType = vex::hold);
+extern void armsDown();
 
 extern vex::motor_group intake;
 

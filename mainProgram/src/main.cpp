@@ -25,6 +25,7 @@ using namespace vex;
 vex::competition Competition;
 vex::timer loopTime;
 motor_group intake ( intakeLeft, intakeRight );
+// motor_group Drivetrain ( frontLeft, frontRight, backLeft, backRight );
 
 // vision::signature CUBE_ORANGE (1, 6343, 7765, 7054, -2843, -1635, -2239, 3.000, 0);
 // vision::signature CUBE_GREEN (2, -6065, -3709, -4887, -3385, -1461, -2423, 2.500, 0);
@@ -70,6 +71,10 @@ bool armsMoving(false);
 bool turboTurn(false);
 
 bool autoAbort(false);
+
+bool orangeToggle(false);
+bool purpleToggle(false);
+bool greenToggle(false);
 
 double trayStick (0);
 
@@ -139,6 +144,7 @@ void trayUp() {
     if(!trayMoving) {
       trayMoving = true;
       autoIntake = 0;
+      forwardFunction(2, 5, 10, 5, false);
       while (tray.position(deg) < 750 && !autoAbort) {
         autoTray = ( tray.position(deg) * -0.1 + 100 );
         if (tray.position(deg) < 600) {
@@ -175,19 +181,39 @@ void trayDown()
   }
 }
 
+void armsMove (double degrees, double percent, vex::brakeType brakeType)
+{
+  autoArms = percent;
+  waitUntil(autoAbort || fabs(arms.position(deg)) >= fabs(degrees * 5));
+  autoArms = 0;
+  arms.setBrake(brakeType);
+}
+
+
+// void armsMove (double degrees, vex::brakeType brakeType, double offset, double multiplier)
+// {
+//   if(!armsMoving) { // are the arms moving?
+//       armsMoving = true;
+//       while (arms.position(deg) < degrees * 5 && !autoAbort) {
+//         autoArms = ( arms.position(deg) * multiplier + offset );
+//         vex::task::sleep(20);
+//       }
+//       autoArms = 0;
+//       armsMoving = false;
+//       arms.setBrake(brakeType);
+//     }
+// }
+
 void armsDown ()
 {
     if(!armsMoving) {
     armsMoving = true;
-    autoIntake = 0;
     while (arms.position(deg) > 0 && !autoAbort)
     {
       autoArms = ( ( arms.position(deg) * -0.07 + 100 ) * -1);
       vex::task::sleep(20);
     }
     autoArms = 0;
-    autoIntake = 0;
-    autoDrive = 0;
     armsMoving = false;
   arms.stop(brake);
   armsPos = down;
@@ -243,20 +269,6 @@ void armsLow ()
   }
 }
 
-void auton()
-{
-  autonInitialize();
-
-  forwardFunction( 34, 5, 50, 3, true);
-  forwardFunction(-15, 5, 50, 3, true);
-  forwardFunction(-15, 5, 50, 3, false);
-  strafeFunction( -24, 5, 50, 3, true);
-  forwardFunction( 30, 5, 50, 3, true);
-
-
-  autonStop();
-}
-
 double visionDetect ()
 {
   if (Vision.objectCount > 0 && Vision.largestObject.height > 30) {
@@ -274,22 +286,22 @@ void visionSteerFunction ()
   double tempSteer;
   Inertial.resetRotation();
   while (Controller1.ButtonL2.pressing()) {
-    Controller1.Screen.clearScreen();
+    Controller2.Screen.clearScreen();
     
     Vision.takeSnapshot(Vision__SIG_1);
-    Controller1.Screen.setCursor(1, 1);
-    Controller1.Screen.print("Green %d", Vision.largestObject.height);
-    green = visionDetect();
+    Controller2.Screen.setCursor(1, 1);
+    Controller2.Screen.print("Green %d", Vision.largestObject.height);
+    green = visionDetect() * greenToggle;
 
     Vision.takeSnapshot(Vision__SIG_2);
-    Controller1.Screen.setCursor(2, 1);
-    Controller1.Screen.print("Orange %d", Vision.largestObject.height);
-    orange = visionDetect();
+    Controller2.Screen.setCursor(2, 1);
+    Controller2.Screen.print("Orange %d", Vision.largestObject.height);
+    orange = visionDetect() * orangeToggle;
 
     Vision.takeSnapshot(Vision__SIG_3);
-    Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print("Purple %d", Vision.largestObject.height);
-    purple = visionDetect();
+    Controller2.Screen.setCursor(3, 1);
+    Controller2.Screen.print("Purple %d", Vision.largestObject.height);
+    purple = visionDetect() * purpleToggle;
 
     tempSteer = green;
     if (fabs(orange) > fabs(tempSteer)) tempSteer = orange;
@@ -308,6 +320,12 @@ void trayReset ()
   tray.resetPosition();
 }
 
+void test()
+{
+  armsMove(25, 50);
+  wait(0.5, sec);
+  armsDown();
+}
 
 /*===========================================================================*/
 
@@ -327,6 +345,7 @@ void pre_auton( void ) {
   Controller1.ButtonR1.pressed(intakeOutSlow);
   Controller1.ButtonUp.pressed(armsHigh);
   Controller1.ButtonDown.pressed(armsLow);
+  Controller1.ButtonRight.pressed(test);
 
 
   Controller2.ButtonX.pressed(trayReset);
@@ -364,8 +383,6 @@ void autonomous( void ) {
 
   wait(0.5, sec);
 
-  autonStop();
-
   return;
 }
 
@@ -374,7 +391,6 @@ void autonomous( void ) {
 void usercontrol( void ) {
   // Brain.loopTimer.
   loopTime.reset();
-  autonStop();
 
   while (1) {
     // if (axis3Prop + autoDrive > Drivetrain.velocity(pct) + 20) {
@@ -433,6 +449,9 @@ void usercontrol( void ) {
     }
 
     autoAbort = Controller1.ButtonL1.pressing();
+
+    // Vision.setLedBrightness(100);
+    // Vision.setLedColor(244, 244, 244);
 
 
     vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 
