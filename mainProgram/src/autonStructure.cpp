@@ -62,7 +62,7 @@ int forwardTask()
   {
     waitUntil(forwardStruct.isMoving);
     startDistance = forwardDistance;
-    while(fabs(forwardDistance - startDistance) < fabs(forwardStruct.distance))
+    while(!autoAbort && fabs(forwardDistance - startDistance) < fabs(forwardStruct.distance))
     {
       forwardOutput = rampMath(fabs(forwardDistance - startDistance), fabs(forwardStruct.distance), forwardStruct.startSpeed, forwardStruct.maxSpeed,
       forwardStruct.endSpeed) * fabs(forwardStruct.distance) / forwardStruct.distance;
@@ -92,7 +92,7 @@ int strafeTask()
   {
     waitUntil(strafeStruct.isMoving);
     startDistance = strafeDistance;
-    while(fabs(strafeDistance - startDistance) < fabs(strafeStruct.distance))
+    while(!autoAbort && fabs(strafeDistance - startDistance) < fabs(strafeStruct.distance))
     {
       strafeOutput = rampMath(fabs(strafeDistance - startDistance), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
       strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance * strafeSpeedP;
@@ -120,7 +120,7 @@ int turnTask()
   double startYaw;
   while(1)
   {
-    waitUntil(turnStruct.isMoving);
+    waitUntil(!autoAbort && turnStruct.isMoving);
     startYaw = Inertial.yaw();
     while(fabs(Inertial.yaw() - startYaw) < fabs(turnStruct.distance))
     {

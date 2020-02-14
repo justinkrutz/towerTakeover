@@ -26,9 +26,9 @@ signature Vision__SIG_3 = signature (3, 313, 1063, 688, 4757, 6865, 5811, 3, 0);
 signature Vision__SIG_4 = signature (4, -2699, -2105, -2402, 7879, 9039, 8459, 4.3, 0);
 vision Vision = vision (PORT15, 100, Vision__SIG_1, Vision__SIG_2, Vision__SIG_3, Vision__SIG_4);
 /*vex-vision-config:end*/
-sonar RangeFinder = sonar(Brain.ThreeWirePort.G);
-line LineTracker = line(Brain.ThreeWirePort.E);
-led Flashlight = led(Brain.ThreeWirePort.F);
+line LineTrackerRight = line(Brain.ThreeWirePort.A);
+line LineTrackerLeft = line(Brain.ThreeWirePort.B);
+line LineTrackerTray = line(Brain.ThreeWirePort.C);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

@@ -40,19 +40,20 @@ extern void turnFunction    (double distance, int startSpeed, int maxSpeed, int 
 extern double forwardOutput;
 extern double strafeOutput;
 extern double turnOutput;
-extern void autonStop();
+extern bool autoAbort;
 
 extern double autoTray;
 extern double autoArms;
 extern double autoDrive;
 extern double autoTurn;
-extern double autoIntake;
 
+extern void goalDrive();
 extern void trayUp();
 extern void trayDown();
 extern void intakeSpin(double degrees, double percent);
 extern void armsMove (double degrees, double percent, vex::brakeType brakeType = vex::hold);
 extern void armsDown();
+extern double autoIntake;
 
 extern vex::motor_group intake;
 

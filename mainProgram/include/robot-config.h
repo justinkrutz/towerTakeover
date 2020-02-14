@@ -24,9 +24,9 @@ extern signature Vision__SIG_5;
 extern signature Vision__SIG_6;
 extern signature Vision__SIG_7;
 extern vision Vision;
-extern sonar RangeFinder;
-extern line LineTracker;
-extern led Flashlight;
+extern line LineTrackerRight;
+extern line LineTrackerLeft;
+extern line LineTrackerTray;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Text.
