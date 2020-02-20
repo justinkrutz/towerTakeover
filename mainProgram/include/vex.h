@@ -33,13 +33,32 @@ extern void menuLcdTouch();
 extern void autonIndicator();
 extern int currentPage;
 
+extern double headingDeg;
 extern void autonInitialize();
+extern void autonTaskStart();
 extern void forwardFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern void strafeFunction  (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern void turnFunction    (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern double forwardOutput;
 extern double strafeOutput;
 extern double turnOutput;
+extern double headingDeg;
+extern bool gyroActive;
+
+struct rampStruct
+{
+  double distance;
+  int startSpeed;
+  int maxSpeed;
+  int endSpeed;
+  bool isMoving;
+};
+
+extern rampStruct forwardStruct;
+extern rampStruct strafeStruct;
+extern rampStruct turnStruct;
+
+
 extern bool autoAbort;
 
 extern double autoTray;
@@ -56,9 +75,14 @@ extern void armsDown();
 extern double autoIntake;
 
 extern vex::motor_group intake;
+extern vex::competition Competition;
+extern vex::motor_group Drivetrain;
 
 extern void autonRun(int auton);
 #include "robot-config.h"
+
+extern double gyroYawStart;
+#define gyroYaw (Inertial.rotation(deg) - gyroYawStart)
 
 #define waitUntil(condition)                                                   \
   do {                                                                         \

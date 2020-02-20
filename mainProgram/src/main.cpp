@@ -16,7 +16,11 @@
 // LineTrackerRight     line          A               
 // LineTrackerLeft      line          B               
 // LineTrackerTray      line          C               
+// tipWheel             bumper        D               
+// Flashlight           led           H               
 // ---- END VEXCODE CONFIGURED DEVICES ----
+
+
 
 #include "vex.h"
 
@@ -39,6 +43,10 @@ motor_group Drivetrain ( frontLeft, frontRight, backLeft, backRight );
 #define low 1
 #define high 2
 
+#define cubeGreen Vision__SIG_1
+#define cubeOrange Vision__SIG_2
+#define cubePurple Vision__SIG_3
+
 double forwardDistanceP(28.647889757);
 double strafeDistanceP(32.243767313);
 double strafeSpeedP(1.12551980572);
@@ -57,7 +65,8 @@ double rampDrive(0);
 
 double rampTurn(0);
 
-double visionSteer(0);
+double visionTurn(0);
+double visionStrafe(0);
 
 double lastTime(0);
 
@@ -71,11 +80,15 @@ bool turboTurn(false);
 
 bool autoAbort(false);
 
+bool autoAbortTray(false);
+
+bool greenToggle(true);
 bool orangeToggle(true);
 bool purpleToggle(true);
-bool greenToggle(true);
+bool Button(true);
 
 double trayStick (0);
+double trayButton (0);
 
 double armsStick (0);
 
@@ -87,22 +100,25 @@ int motorTask()
   while(1)
   {
   double moveForward = forwardOutput + stickForward + autoDrive;
-  double moveStrafe  = strafeOutput  + stickStrafe;
-  double moveTurn    = turnOutput    + stickTurn + visionSteer;
+  double moveStrafe  = strafeOutput  + stickStrafe + visionStrafe;
+  double moveTurn    = turnOutput    + stickTurn + visionTurn;
 
   frontRight.spin(fwd, moveForward - moveStrafe - moveTurn, pct);
   frontLeft.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
   backRight.spin(fwd,  moveForward + moveStrafe - moveTurn, pct);
   backLeft.spin(fwd,   moveForward - moveStrafe + moveTurn, pct);
 
-  intakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
-  intakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + autoIntake + autoIntake + autoIntake), percent);
+  intakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + autoIntake), percent);
+  intakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + autoIntake), percent);
   arms.spin(fwd, armsStick + autoArms, pct);
-  tray.spin(fwd, autoTray + trayStick, percent);
+  tray.spin(fwd, autoTray + trayStick + trayButton, percent);
   }
-
+  
   return(0);
 }
+
+
+/*===========================================================================*/
 
 
 void intakeSpin(double degrees, double percent)
@@ -139,14 +155,18 @@ void intakeOutSlow()
 
 }
 
+/*===========================================================================*/
+
+
 int goalIntake()
 {
+  double pos = intake.position(deg);
   intakeMoving = true;
   if (LineTrackerTray.value(pct) > 70 && !autoAbort) {
   autoIntake = -20;
-  waitUntil(LineTrackerTray.value(pct) < 50 || autoAbort);
+  waitUntil(autoAbort || LineTrackerTray.value(pct) < 50 || intake.position(deg) < pos - 270);
   autoIntake = 0;
-  // intakeSpin(70, -20);
+  // intakeSpin(30, -20);
   }
 
   intakeMoving = false;
@@ -158,23 +178,27 @@ void goalDrive ()
   task task5 = task( goalIntake );
 
   Drivetrain.resetRotation();
-
-  double time = Brain.Timer.time(msec);
-
-  while (!autoAbort && (Brain.Timer.time(msec) < time + 500 || Inertial.gyroRate(xaxis, dps) < 6)) {
-    if (Competition.isAutonomous()) {
-      autoDrive = 30;
-    } else if (Drivetrain.position(deg) < 70) {
-    autoDrive = Drivetrain.position(deg) * 0.4 + 5;
-    }
-    task::sleep(5);
-  }
-  autoDrive = 0;
   Drivetrain.setStopping(brake);
-  wait(0.3, sec);
-  Drivetrain.setStopping(coast);
 
+
+  autoDrive = 30;
+  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 40 || LineTrackerRight.reflectivity() > 40);
+  autoDrive = 0;
+  wait(0.1, sec);
+
+  autoDrive = -10;
+  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 40 || LineTrackerRight.reflectivity() > 40);
+  
+  autoDrive = 0;
+  Drivetrain.setStopping(coast);
   waitUntil(autoAbort || !intakeMoving);
+}
+
+int trayUpDrive ()
+{
+  waitUntil(autoAbort || tray.position(deg) > 300);
+  forwardFunction(1.5, 3, 5, 3, false);
+  return 0;
 }
 
 void trayUp() {
@@ -182,25 +206,21 @@ void trayUp() {
     trayMoving = true;
     autoIntake = 0;
     autoArms = -10;
-    while (tray.position(deg) < 650 && !autoAbort) {
-      autoTray = ( tray.position(deg) * -0.139 + 110 );
-      if (tray.position(deg) > 500) {
+    task trayUpDriveTask ( trayUpDrive );
+
+    double tempTray;
+    while (tray.position(deg) < 700 && !autoAbort) {
+      tempTray = ( tray.position(deg) * -0.139 + 110 );
+      if (tray.position(deg) > 650) {
+        tempTray = 19.65;
+      } else if (tray.position(deg) > 400) {
         autoIntake = 0;
-        if (LineTrackerTray.value(pct) > 32) {
-        autoDrive = 4;
-        } else {
-        autoDrive = 0;
-        }
-      } else if (tray.position(deg) > 300) {
-        autoIntake = 5;
-      } else if (tray.position(deg) > 150) {
+      } else if (tray.position(deg) > 0) {
         autoIntake = -5;
-      } else if (tray.position(deg) > 50) {
-        autoDrive = -4;
       } else {
         autoIntake = 0;
-        autoDrive = 0;
       }
+      autoTray = tempTray;
       vex::task::sleep(20);
     }
     autoTray = 0;
@@ -223,10 +243,10 @@ int trayDownDrive()
 
 void trayDown()
 {
-  if(trayMoving) {
+  if(!autoAbort && trayMoving) {
     wait(1, sec);
   }
-  if(!trayMoving) {
+  if(!autoAbort && !trayMoving) {
     trayMoving = true;
     autoIntake = 0;
     task task6 = task( trayDownDrive );
@@ -239,6 +259,31 @@ void trayDown()
   }
 }
 
+void trayStart ()
+{
+  autoAbortTray = false;
+  if (tray.position(deg) > 10){
+    trayDown();
+  } else {
+  goalDrive();
+  trayUp();
+  trayDown();
+  }
+}
+
+void trayStop ()
+{
+  autoAbortTray = true;
+  wait(0.3, sec);
+  autoAbortTray = false;
+}
+
+
+
+
+/*===========================================================================*/
+
+
 void armsMove (double degrees, double percent, vex::brakeType brakeType)
 {
   autoArms = percent;
@@ -246,21 +291,6 @@ void armsMove (double degrees, double percent, vex::brakeType brakeType)
   autoArms = 0;
   arms.setBrake(brakeType);
 }
-
-
-// void armsMove (double degrees, vex::brakeType brakeType, double offset, double multiplier)
-// {
-//   if(!armsMoving) { // are the arms moving?
-//       armsMoving = true;
-//       while (arms.position(deg) < degrees * 5 && !autoAbort) {
-//         autoArms = ( arms.position(deg) * multiplier + offset );
-//         vex::task::sleep(20);
-//       }
-//       autoArms = 0;
-//       armsMoving = false;
-//       arms.setBrake(brakeType);
-//     }
-// }
 
 void armsDown ()
 {
@@ -327,61 +357,121 @@ void armsLow ()
   }
 }
 
-// double visionDetect ()
-// {
-//   if (Vision.objectCount > 0 && Vision.largestObject.height > 30) {
-//     return (Vision.largestObject.centerX - 165) * 0.5;
-//   } else {
-//     return 0;
-//   }
-// }
+/*===========================================================================*/
 
-void visionSteerFunction ()
+
+
+void greenToggleButton ()
 {
-  double green;
-  double orange;
-  double purple;
+  greenToggle = !greenToggle;
+}
+
+void purpleToggleButton ()
+{
+  purpleToggle = !purpleToggle;
+}
+
+void orangeToggleButton ()
+{
+  orangeToggle = !orangeToggle;
+}
+
+
+
+
+
+void visionDetectFunction (bool turn)
+{
+  double posOrange;
+  double posPurple;
+  double posGreen;
+
+  double heightOrange;
+  double heightPurple;
+  double heightGreen;
+
   double tempSteer;
-  Inertial.resetRotation();
-  while (Controller1.ButtonL2.pressing()) {
+  double tempHeight;
+
+  double objectCount;
+
+  vex::timer intakeTime;
+  Flashlight.on();
+  
+  while (Controller1.ButtonL2.pressing() || Controller1.ButtonL1.pressing()) {
+
     Controller2.Screen.clearScreen();
     
-    Vision.takeSnapshot(Vision__SIG_1);
-    green = (Vision.largestObject.centerX - 165);
+    Vision.takeSnapshot(cubeOrange);
+    objectCount = Vision.objectCount;
+    posOrange = (Vision.largestObject.centerX - 165) * 0.5 * orangeToggle;
+    heightOrange = Vision.largestObject.height;
 
     Controller2.Screen.setCursor(1, 1);
-    Controller2.Screen.print("Green %d", Vision.largestObject.height);
+    Controller2.Screen.print("Orange H %d", Vision.largestObject.height);
     Controller2.Screen.setCursor(2, 1);
-    Controller2.Screen.print("centerX %d", Vision.largestObject.centerX - 165);
+    Controller2.Screen.print("Orange X %d", Vision.largestObject.centerX - 165);
 
-    Vision.takeSnapshot(Vision__SIG_2);
-    orange = (Vision.largestObject.centerX - 165) * 0.5 * orangeToggle;
+    Vision.takeSnapshot(cubePurple);
+    objectCount = objectCount + Vision.objectCount;
+    posPurple = (Vision.largestObject.centerX - 165) * 0.5 * purpleToggle;
+    heightPurple = Vision.largestObject.height;
 
-    Vision.takeSnapshot(Vision__SIG_3);
-    purple = (Vision.largestObject.centerX - 165) * 0.5 * purpleToggle;
+    Vision.takeSnapshot(cubeGreen);
+    objectCount = objectCount + Vision.objectCount;
+    posGreen = (Vision.largestObject.centerX - 165);
+    heightGreen = Vision.largestObject.height;
 
-    tempSteer = green;
-    if (fabs(orange) > fabs(tempSteer)) tempSteer = orange;
-    if (fabs(purple) > fabs(tempSteer)) tempSteer = purple;
 
-    if (Vision.objectCount > 0) {
-      visionSteer = tempSteer;
-    } else {
-      visionSteer = 0;
+
+    tempSteer = posOrange;
+    tempHeight = heightOrange;
+
+    if (heightPurple > tempHeight) {
+      tempSteer = posPurple;
+      tempHeight = heightPurple;
     }
 
-    Controller2.Screen.setCursor(3, 1);
-    Controller2.Screen.print("Green S %d", green);
+    if (heightGreen > tempHeight) {
+      tempSteer = posGreen;
+      tempHeight = heightGreen;
+    }
 
+
+    if (objectCount > 0 && tempHeight > 20) {
+      if (turn) {
+      visionStrafe = 0;
+      visionTurn = tempSteer * 0.5;
+      } else {
+      visionTurn = 0;
+      visionStrafe = tempSteer;
+      }
+    } else {
+      visionTurn = 0;
+      visionStrafe = 0;
+    }
+
+    if (objectCount > 0 && tempHeight > 80) {
+      autoIntake = 100;
+      intakeTime.clear();
+    } else if (intakeTime.time(sec) > 2) {
+      autoIntake = 0;
+    }
   }
-  visionSteer = 0;
-  // autoIntake = 0;
+  visionTurn = 0;
+  visionStrafe = 0;
+  autoIntake = 0;
+  Flashlight.off();
+}
 
+void visionTurnFunction ()
+{
+  visionDetectFunction(true);
 }
 
 void visionStrafeFunction ()
 {
-
+  visionDetectFunction(false);
 }
 
 void trayReset ()
@@ -396,24 +486,41 @@ void test()
   armsDown();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*===========================================================================*/
 
 void pre_auton( void ) {
-  // Inertial.calibrate();
+  Flashlight.off();
+  Inertial.calibrate();
   menuLcdDraw();
   controllerDraw();
   tray.setStopping(brake);
   tray.setTimeout(1, seconds);
 
-
-  Controller1.ButtonY.pressed(goalDrive);
-  Controller1.ButtonX.pressed(trayUp);
-  Controller1.ButtonA.pressed(trayDown);
+  Controller1.ButtonY.pressed(trayUp);
+  Controller1.ButtonX.pressed(trayStart);
+  Controller1.ButtonX.released(trayStop);
 
   Controller1.ButtonR2.pressed(intakeIn);
   Controller1.ButtonR1.pressed(intakeOutSlow);
 
-  Controller1.ButtonL2.pressed(visionSteerFunction);
+  Controller1.ButtonL2.pressed(visionTurnFunction);
   Controller1.ButtonL1.pressed(visionStrafeFunction);
 
   Controller1.ButtonUp.pressed(armsHigh);
@@ -424,8 +531,15 @@ void pre_auton( void ) {
 
 
 
-  Controller2.ButtonX.pressed(trayReset);
+  Controller2.ButtonLeft.pressed(orangeToggleButton);
+  Controller2.ButtonUp.pressed(purpleToggleButton);
+  Controller2.ButtonRight.pressed(greenToggleButton);
 
+  Controller2.ButtonY.pressed(goalDrive);
+  Controller2.ButtonX.pressed(trayUp);
+  Controller2.ButtonA.pressed(trayDown);
+
+  Controller2.ButtonR1.pressed(trayReset);
 
 
 
@@ -441,6 +555,7 @@ void pre_auton( void ) {
   Inertial.calibrate();
 
   task task1 = task( motorTask );
+  autonTaskStart();
 
 
   while (!Competition.isAutonomous() || !Competition.isEnabled()) {
@@ -464,9 +579,6 @@ void autonomous( void ) {
 /*===========================================================================*/
 
 void usercontrol( void ) {
-  // Brain.loopTimer.
-  loopTime.reset();
-
   while (1) {
     // if (axis3Prop + autoDrive > Drivetrain.velocity(pct) + 20) {
     //   rampDrive = rampDrive + loopTime.time()/5;
@@ -504,10 +616,11 @@ void usercontrol( void ) {
     {
       if(Controller2.ButtonR2.pressing()) 
       {
-        trayStick = Controller2.Axis2.position();
-      } else {
         trayStick = 0;
         armsStick = Controller2.Axis2.position();
+      } else {
+        armsStick = 0;
+        trayStick = Controller2.Axis2.position();
       }
     } else {
       trayStick = 0;
@@ -523,18 +636,24 @@ void usercontrol( void ) {
 
     }
 
-    autoAbort = Controller1.ButtonB.pressing();
+    autoAbort = Controller1.ButtonB.pressing() || Controller2.ButtonB.pressing() || autoAbortTray;
+
+    if (Controller1.ButtonA.pressing()){
+      trayButton = -30;
+    } else {
+      trayButton = 0;
+    }
 
     // Vision.setLedBrightness(100);
     // Vision.setLedColor(244, 244, 244);
 
     Controller1.Screen.clearScreen();
     Controller1.Screen.setCursor(1, 1);
-    Controller1.Screen.print(Inertial.gyroRate(xaxis, dps));
+    Controller1.Screen.print(LineTrackerRight.reflectivity());
     Controller1.Screen.setCursor(2, 1);
-    Controller1.Screen.print(LineTrackerTray.reflectivity());
+    Controller1.Screen.print(LineTrackerLeft.reflectivity());
     Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print(LineTrackerTray.value(pct));
+    Controller1.Screen.print(LineTrackerTray.reflectivity());
 
 
     vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 

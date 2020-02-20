@@ -27,18 +27,15 @@ int rampMath(double input, double totalRange, int startOutput, int maxOutput, in
   return output;
 }
 
-struct rampStruct
-{
-  double distance;
-  int startSpeed;
-  int maxSpeed;
-  int endSpeed;
-  bool isMoving;
-};
+double gyroYawStart;
 
-rampStruct forwardStruct {};
-rampStruct strafeStruct {};
-rampStruct turnStruct {};
+bool gyroActive (true);
+
+double headingDeg (0);
+
+rampStruct forwardStruct;
+rampStruct strafeStruct;
+rampStruct turnStruct;
 
 double forwardOutput;
 double strafeOutput;
@@ -66,18 +63,18 @@ int forwardTask()
     {
       forwardOutput = rampMath(fabs(forwardDistance - startDistance), fabs(forwardStruct.distance), forwardStruct.startSpeed, forwardStruct.maxSpeed,
       forwardStruct.endSpeed) * fabs(forwardStruct.distance) / forwardStruct.distance;
-      task::sleep(20);
+      task::sleep(5);
     }
     forwardStruct.isMoving = false;
     forwardOutput = 0;
+    task::sleep(5);
   }
   return(0);
 }
 
 /*===========================================================================*/
 
-void strafeFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
-{
+void strafeFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion) {
   strafeStruct = {distance, startSpeed, maxSpeed, endSpeed, true};
   if (waitForCompletion)
   {
@@ -96,10 +93,11 @@ int strafeTask()
     {
       strafeOutput = rampMath(fabs(strafeDistance - startDistance), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
       strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance * strafeSpeedP;
-      task::sleep(20);
+      task::sleep(5);
     }
     strafeStruct.isMoving = false;
     strafeOutput = 0;
+    task::sleep(5);
   }
   return(0);
 }
@@ -117,37 +115,48 @@ void turnFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, 
 
 int turnTask()
 {
-  double startYaw;
   while(1)
   {
-    waitUntil(!autoAbort && turnStruct.isMoving);
-    startYaw = Inertial.yaw();
-    while(fabs(Inertial.yaw() - startYaw) < fabs(turnStruct.distance))
+    while (!turnStruct.isMoving){
+      if (Competition.isAutonomous() && gyroActive){
+      turnOutput = (headingDeg - gyroYaw);
+      } else {
+      turnOutput = 0;
+      }
+      task::sleep(5);
+    }
+    while(!autoAbort && fabs(gyroYaw - headingDeg) <= fabs(turnStruct.distance))
     {
-      turnOutput = rampMath(fabs(Inertial.yaw() - startYaw), fabs(turnStruct.distance), turnStruct.startSpeed, turnStruct.maxSpeed,
-      turnStruct.endSpeed, 0.2, 0.8) * fabs(turnStruct.distance) / turnStruct.distance;
-      task::sleep(20);
+      turnOutput = rampMath(fabs(gyroYaw - headingDeg), fabs(turnStruct.distance), turnStruct.startSpeed, turnStruct.maxSpeed,
+      turnStruct.endSpeed, 0.2, 1) * fabs(turnStruct.distance) / turnStruct.distance;
+      task::sleep(5);
     }
     turnStruct.isMoving = false;
     turnOutput = 0;
+    headingDeg = headingDeg + turnStruct.distance;
+    task::sleep(5);
   }
   return(0);
 }
 
 /*===========================================================================*/
 
-
-
 void autonInitialize()
+{
+  forwardStruct = {0, 0, 0, 0, false};
+  strafeStruct = {0, 0, 0, 0, false};
+  turnStruct = {0, 0, 0, 0, false};
+  gyroYawStart = Inertial.rotation(deg);
+  headingDeg = 0;
+  forwardOutput = 0;
+  strafeOutput = 0;
+  turnOutput = 0;
+}
+
+
+void autonTaskStart()
 {
   task task2 = task( forwardTask );
   task task3 = task( strafeTask );
   task task4 = task( turnTask );
-}
-
-void autonStop()
-{
-  task::stop( forwardTask );
-  task::stop( strafeTask );
-  task::stop( turnTask );
 }

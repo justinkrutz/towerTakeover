@@ -27,6 +27,8 @@ extern vision Vision;
 extern line LineTrackerRight;
 extern line LineTrackerLeft;
 extern line LineTrackerTray;
+extern bumper tipWheel;
+extern led Flashlight;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Text.
