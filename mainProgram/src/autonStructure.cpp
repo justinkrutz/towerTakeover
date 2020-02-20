@@ -3,14 +3,6 @@
 using namespace vex;
 
 
-#define forwardDistanceP (28.647889757)
-#define strafeDistanceP (32.243767313)
-#define strafeSpeedP (1.12551980572)
-
-#define forwardDistance (frontLeft.rotation(deg) + backLeft.rotation(deg) + frontRight.rotation(deg) + backRight.rotation(deg)) / 4 / forwardDistanceP
-#define strafeDistance (frontLeft.rotation(deg) - backLeft.rotation(deg) + backRight.rotation(deg) - frontRight.rotation(deg)) / 4 / strafeDistanceP
-
-
 int rampMath(double input, double totalRange, int startOutput, int maxOutput, int endOutput, double rampUpP = 0.1, double rampDownP = 0.12) {
   int output;
   double rampUpRange = ((maxOutput - startOutput)*rampUpP);
@@ -67,6 +59,7 @@ int forwardTask()
     }
     forwardStruct.isMoving = false;
     forwardOutput = 0;
+    printf("%f Distance after FT\n", forwardDistance);
     task::sleep(5);
   }
   return(0);
@@ -97,6 +90,7 @@ int strafeTask()
     }
     strafeStruct.isMoving = false;
     strafeOutput = 0;
+    printf("%f Inches after ST\n", strafeDistance);
     task::sleep(5);
   }
   return(0);
@@ -134,6 +128,7 @@ int turnTask()
     turnStruct.isMoving = false;
     turnOutput = 0;
     headingDeg = headingDeg + turnStruct.distance;
+    printf("%f Degrees after TT\n", gyroYaw);
     task::sleep(5);
   }
   return(0);
@@ -151,6 +146,8 @@ void autonInitialize()
   forwardOutput = 0;
   strafeOutput = 0;
   turnOutput = 0;
+  Drivetrain.resetRotation();
+  Drivetrain.resetPosition();
 }
 
 

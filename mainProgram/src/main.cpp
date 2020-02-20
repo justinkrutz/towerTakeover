@@ -47,9 +47,9 @@ motor_group Drivetrain ( frontLeft, frontRight, backLeft, backRight );
 #define cubeOrange Vision__SIG_2
 #define cubePurple Vision__SIG_3
 
-double forwardDistanceP(28.647889757);
-double strafeDistanceP(32.243767313);
-double strafeSpeedP(1.12551980572);
+// double forwardDistanceP(28.647889757);
+// double strafeDistanceP(32.243767313);
+// double strafeSpeedP(1.12551980572);
 
 double stickForward(0);
 double stickStrafe(0);
@@ -144,14 +144,14 @@ void intakeOut()
 
 void intakeInSlow()
 {
-  if(autoIntake == 20) autoIntake = 0;
-  else autoIntake = 20;
+  if(autoIntake == 60) autoIntake = 0;
+  else autoIntake = 60;
 }
 
 void intakeOutSlow()
 {
-  if(autoIntake == -20) autoIntake = 0;
-  else autoIntake = -20;
+  if(autoIntake == -60) autoIntake = 0;
+  else autoIntake = -60;
 
 }
 
@@ -163,7 +163,7 @@ int goalIntake()
   double pos = intake.position(deg);
   intakeMoving = true;
   if (LineTrackerTray.value(pct) > 70 && !autoAbort) {
-  autoIntake = -20;
+  autoIntake = -60;
   waitUntil(autoAbort || LineTrackerTray.value(pct) < 50 || intake.position(deg) < pos - 270);
   autoIntake = 0;
   // intakeSpin(30, -20);
@@ -216,7 +216,7 @@ void trayUp() {
       } else if (tray.position(deg) > 400) {
         autoIntake = 0;
       } else if (tray.position(deg) > 0) {
-        autoIntake = -5;
+        autoIntake = -15;
       } else {
         autoIntake = 0;
       }
@@ -235,7 +235,7 @@ int trayDownDrive()
 {
     autoDrive = -25;
     wait(0.1, sec);
-    intakeSpin(360, -50);
+    intakeSpin(360, -100);
     autoDrive = 0;
   return 0;
 }
@@ -283,11 +283,11 @@ void trayStop ()
 
 /*===========================================================================*/
 
-
 void armsMove (double degrees, double percent, vex::brakeType brakeType)
 {
   autoArms = percent;
-  waitUntil(autoAbort || fabs(arms.position(deg)) >= fabs(degrees * 5));
+  if (percent > 0) waitUntil(autoAbort || fabs(arms.position(deg)) >= fabs(degrees * 5));
+  else if (percent < 0) waitUntil(autoAbort || fabs(arms.position(deg)) <= fabs(degrees * 5));
   autoArms = 0;
   arms.setBrake(brakeType);
 }
@@ -500,7 +500,10 @@ void test()
 
 
 
-
+void tipWheelTrigger()
+{
+  printf("%f Time tipWheel\n", Brain.Timer.time(msec));
+}
 
 
 /*===========================================================================*/
@@ -512,6 +515,8 @@ void pre_auton( void ) {
   controllerDraw();
   tray.setStopping(brake);
   tray.setTimeout(1, seconds);
+
+  tipWheel.released(tipWheelTrigger);
 
   Controller1.ButtonY.pressed(trayUp);
   Controller1.ButtonX.pressed(trayStart);
@@ -571,7 +576,7 @@ void autonomous( void ) {
   autonInitialize();
   autonRun(currentPage);
 
-  wait(0.5, sec);
+  wait(2, sec);
 
   return;
 }

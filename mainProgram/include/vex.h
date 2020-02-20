@@ -84,6 +84,13 @@ extern void autonRun(int auton);
 extern double gyroYawStart;
 #define gyroYaw (Inertial.rotation(deg) - gyroYawStart)
 
+#define forwardDistanceP (28.647889757)
+#define strafeDistanceP (32.243767313)
+#define strafeSpeedP (1.12551980572)
+
+#define forwardDistance ((frontLeft.rotation(deg) + backLeft.rotation(deg) + frontRight.rotation(deg) + backRight.rotation(deg)) / 4 / forwardDistanceP)
+#define strafeDistance ((frontLeft.rotation(deg) - backLeft.rotation(deg) + backRight.rotation(deg) - frontRight.rotation(deg)) / 4 / strafeDistanceP)
+
 #define waitUntil(condition)                                                   \
   do {                                                                         \
     wait(5, msec);                                                             \
