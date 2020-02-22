@@ -13,7 +13,7 @@ motor intakeLeft = motor(PORT12, ratio18_1, false);
 motor intakeRight = motor(PORT13, ratio18_1, true);
 controller Controller2 = controller(partner);
 motor tray = motor(PORT21, ratio36_1, false);
-motor arms = motor(PORT14, ratio18_1, true);
+motor arms = motor(PORT11, ratio18_1, true);
 inertial Inertial = inertial(PORT2);
 motor backLeft = motor(PORT7, ratio18_1, false);
 motor frontLeft = motor(PORT8, ratio18_1, false);
@@ -27,7 +27,7 @@ signature Vision__SIG_4 = signature (4, 0, 0, 0, 0, 0, 0, 3, 0);
 vision Vision = vision (PORT15, 150, Vision__SIG_1, Vision__SIG_2, Vision__SIG_3, Vision__SIG_4);
 /*vex-vision-config:end*/
 line LineTrackerRight = line(Brain.ThreeWirePort.A);
-line LineTrackerLeft = line(Brain.ThreeWirePort.B);
+line LineTrackerLeft = line(Brain.ThreeWirePort.E);
 line LineTrackerTray = line(Brain.ThreeWirePort.C);
 bumper tipWheel = bumper(Brain.ThreeWirePort.D);
 led Flashlight = led(Brain.ThreeWirePort.H);

@@ -48,24 +48,24 @@ struct Page {
 Page pages[41] = {
   ////////    p, b1, b2, b3, b4, --type--, -color-, --------"name"--------, ----------"description"----------,  swSt,  sP
   /*  0 */  { 0,  1,  2,  3,  4,   folder,  __null,                    ""}, 
-  /*  1 */  { 0,  5,  6,  0,  0,   folder,     red,                 "Red"}, 
-  /*  2 */  { 0,  16,  17,  0,  0,   folder,    blue,                "Blue"}, 
+  /*  1 */  { 0,  5,  0,  0,  0,   folder,     red,                 "Red"}, 
+  /*  2 */  { 0,  16, 0,  0,  0,   folder,  blue,                "Blue"}, 
   /*  3 */  { 0,  8,  0,  0,  0,   folder,  yellow,              "Skills"}, 
-  /*  4 */  { 0,  9, 10, 11,  0,   folder,   green,               "Other"}, 
-  /*  5 */  { 1,  0,  0,  0,  0,    auton,     red,          "Small goal",                  "Scores X cubes in small red goal"},
+  /*  4 */  { 0,  9, 10, 18,  0,   folder,   green,               "Other"}, 
+  /*  5 */  { 1,  0,  0,  0,  0,    auton,     red,      "Red Small goal",                  "Scores 9 cubes in small red goal"},
   /*  6 */  { 1,  0,  0,  0,  0,    auton,     red,          "Large goal",                  "Scores X cubes in large red goal"},
   /*  7 */  { 1,  0,  0,  0,  0,    auton,     red,                    "",                                                  ""},
   /*  8 */  { 3,  0,  0,  0,  0,    auton,  yellow,          "Skills one",                                "Does skills stuff."},
   /*  9 */  { 4, 12, 13, 14, 15,   folder,   green,            "Settings"},                   
-  /* 10 */  { 4,  0,  0,  0,  0,    auton,   green,                "None",                                     "Does nothing."},
+  /* 10 */  { 4,  0,  0,  0,  0,    auton,   green,                "None",                                     "Deploys tray."},
   /* 11 */  { 4,  0,  0,  0,  0,    auton,   green,       "Drive Forward",              "Drives forwards and scores one cube."},
   /* 12 */  { 9,  0,  0,  0,  0,  sSlider,   green,      "Useless slider",                                       "Is useless.", false,  57},
   /* 13 */  { 9,  0,  0,  0,  0,  sSwitch,   green,       "Self destruct",                    "Toggles self dectruct feature.",  true},
   /* 14 */  { 9,  0,  0,  0,  0,  sSwitch,   green,                 "Win",                            "Toggles match outcome.", false},  
   /* 15 */  { 9,  0,  0,  0,  0,  sSwitch,   green,              "Flight",                           "Toggles ability to fly.", false},  
-  /* 16 */  { 2,  0,  0,  0,  0,    auton,    blue,          "Small goal",                  "Scores 8 cubes in small blue goal"},
+  /* 16 */  { 2,  0,  0,  0,  0,    auton,    blue,     "Blue Small goal",                  "Scores 9 cubes in small blue goal"},
   /* 17 */  { 2,  0,  0,  0,  0,    auton,    blue,          "Large goal",                  "Scores X cubes in large blue goal"},
-  /* 18 */  
+  /* 18 */  { 4,  0,  0,  0,  0,    auton,   green,          "Absolutely nothing",                  "We are the robots, who don't do anything!"},
   /* 19 */  
   /* 20 */  
   /* 21 */    

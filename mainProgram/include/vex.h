@@ -45,6 +45,8 @@ extern double turnOutput;
 extern double headingDeg;
 extern bool gyroActive;
 
+extern void skillsOne();
+
 struct rampStruct
 {
   double distance;
@@ -58,6 +60,8 @@ extern rampStruct forwardStruct;
 extern rampStruct strafeStruct;
 extern rampStruct turnStruct;
 
+extern int allianceColor;
+
 
 extern bool autoAbort;
 
@@ -65,6 +69,10 @@ extern double autoTray;
 extern double autoArms;
 extern double autoDrive;
 extern double autoTurn;
+extern void visionDetectFunction (bool turn, double turnP = 0.5, double time = 0);
+extern bool greenToggle;
+extern bool orangeToggle;
+extern bool purpleToggle;
 
 extern void goalDrive();
 extern void trayUp();
@@ -72,6 +80,8 @@ extern void trayDown();
 extern void intakeSpin(double degrees, double percent);
 extern void armsMove (double degrees, double percent, vex::brakeType brakeType = vex::hold);
 extern void armsDown();
+extern void armsLow();
+extern void armsHigh();
 extern double autoIntake;
 
 extern vex::motor_group intake;
@@ -82,7 +92,7 @@ extern void autonRun(int auton);
 #include "robot-config.h"
 
 extern double gyroYawStart;
-#define gyroYaw (Inertial.rotation(deg) - gyroYawStart)
+#define gyroYaw ((Inertial.rotation(deg) - gyroYawStart))
 
 #define forwardDistanceP (28.647889757)
 #define strafeDistanceP (32.243767313)
@@ -90,6 +100,9 @@ extern double gyroYawStart;
 
 #define forwardDistance ((frontLeft.rotation(deg) + backLeft.rotation(deg) + frontRight.rotation(deg) + backRight.rotation(deg)) / 4 / forwardDistanceP)
 #define strafeDistance ((frontLeft.rotation(deg) - backLeft.rotation(deg) + backRight.rotation(deg) - frontRight.rotation(deg)) / 4 / strafeDistanceP)
+
+#define blueAlliance 1
+#define redAlliance -1
 
 #define waitUntil(condition)                                                   \
   do {                                                                         \

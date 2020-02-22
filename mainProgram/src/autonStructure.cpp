@@ -9,7 +9,7 @@ int rampMath(double input, double totalRange, int startOutput, int maxOutput, in
   double rampDownRange = ((maxOutput - endOutput)*rampDownP);
   double rampUpMuliplier = ((maxOutput - startOutput) / rampUpRange);
   double rampDownMuliplier = ((maxOutput - endOutput) / rampDownRange);
-      if (fabs(input) <= fabs(rampUpRange)) {
+      if (fabs(input) < fabs(rampUpRange)) {
         output = ((input * rampUpMuliplier) + startOutput);
       } else if (fabs(input) >= (fabs(totalRange) - fabs(rampDownRange))) {
         output = ((totalRange - input) * rampDownMuliplier + endOutput);
@@ -32,6 +32,8 @@ rampStruct turnStruct;
 double forwardOutput;
 double strafeOutput;
 double turnOutput;
+
+int allianceColor (blueAlliance);
 
 /*===========================================================================*/
 
@@ -68,7 +70,7 @@ int forwardTask()
 /*===========================================================================*/
 
 void strafeFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion) {
-  strafeStruct = {distance, startSpeed, maxSpeed, endSpeed, true};
+  strafeStruct = {distance * allianceColor, startSpeed, maxSpeed, endSpeed, true};
   if (waitForCompletion)
   {
     waitUntil(!strafeStruct.isMoving);
@@ -100,7 +102,7 @@ int strafeTask()
 
 void turnFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
 {
-  turnStruct = {distance, startSpeed, maxSpeed, endSpeed, true};
+  turnStruct = {distance * allianceColor, startSpeed, maxSpeed, endSpeed, true};
   if (waitForCompletion)
   {
     waitUntil(!turnStruct.isMoving);
