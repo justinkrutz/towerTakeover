@@ -162,11 +162,11 @@ int goalIntake()
 {
   double pos = intake.position(deg);
   intakeMoving = true;
-  if (LineTrackerTray.value(pct) > 70 && !autoAbort) {
-  autoIntake = -60;
-  waitUntil(autoAbort || LineTrackerTray.value(pct) < 50 || intake.position(deg) < pos - 175);
+  // if (LineTrackerTray.value(pct) > 70 && !autoAbort) {
+  autoIntake = -30;
+  waitUntil(/* autoAbort || LineTrackerTray.value(pct) < 50 || */ intake.position(deg) < pos - 150);
   autoIntake = 0;
-  }
+  // }
 
   intakeMoving = false;
   return 0;
@@ -185,7 +185,7 @@ void goalDrive ()
 
 
   autoDrive = 30;
-  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 20 || (Brain.Timer.time(msec) - time > 900 && Competition.isAutonomous()));
+  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 20 /*(Brain.Timer.time(msec) - time > 1200 && Competition.isAutonomous())*/);
         printf("%f Time goalDrive mid\n", Brain.Timer.time(msec));
         printf("%ld LineTrackerRight mid\n", LineTrackerRight.reflectivity());
   autoDrive = 0;
@@ -194,7 +194,7 @@ void goalDrive ()
   strafeOutput = 0;
 
   autoDrive = -10;
-  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 20 || (Brain.Timer.time(msec) - time > 900 && Competition.isAutonomous()));
+  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 20 /*(Brain.Timer.time(msec) - time > 900 && Competition.isAutonomous())*/);
         printf("%f Time goalDrive end\n", Brain.Timer.time(msec));
         printf("%ld LineTrackerRight end\n", LineTrackerRight.reflectivity());
   
@@ -220,7 +220,7 @@ void trayUp() {
     task trayUpDriveTask ( trayUpDrive );
 
     double tempTray;
-    while (tray.position(deg) < 700 && !autoAbort) {
+    while (tray.position(deg) < 670 && !autoAbort) {
       tempTray = ( tray.position(deg) * -0.171 + 120 );
       if (tray.position(deg) > 620) {
         tempTray = ( tray.position(deg) * 0.3 - 172 );
@@ -683,6 +683,10 @@ void usercontrol( void ) {
     Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.print(LineTrackerLeft.value(pct));
 
+    // printf("\n%f Time\n", Brain.Timer.time(msec));
+    // printf("%f tray torque\n", tray.torque());
+    // printf("%f tray velocity\n", tray.velocity(pct));
+    // printf("%f auto tray\n\n", autoTray);
 
     vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 
   }

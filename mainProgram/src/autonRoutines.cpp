@@ -24,7 +24,7 @@ int deployTray()
 
   autoTray = 0;
   task::sleep(1000);
-  tray.setBrake(hold);
+  tray.setBrake(coast);
   return 0;
 }
 
@@ -81,20 +81,20 @@ void smallGoal (int alliance)
   forwardFunction(11, 10, 35, 25, true);
         printf("%f Time after FF2\n", Brain.Timer.time(msec));
         printf("%f InchesF after FF2\n", forwardDistance);
-  forwardFunction(8, 25, 25, 5, false);
-        printf("%f Time after FF3\n", Brain.Timer.time(msec));
-        printf("%f InchesF after FF3\n", forwardDistance);
-  autoIntake = 80;
-  armsMove(30 ,100);
-  autoIntake = 100;
-  task::sleep(300);
-        printf("%f Time after arms up\n", Brain.Timer.time(msec));
-        printf("%f InchesF after arms up\n", forwardDistance);
-  armsMove(2,-35);
-  armsDown();
-        printf("%f Time after arms down\n", Brain.Timer.time(msec));
-        printf("%f InchesF after arms down\n", forwardDistance);
-  forwardFunction(-24, 20, 100, 5, false);
+  // forwardFunction(8, 25, 25, 5, false);
+  //       printf("%f Time after FF3\n", Brain.Timer.time(msec));
+  //       printf("%f InchesF after FF3\n", forwardDistance);
+  // autoIntake = 80;
+  // armsMove(30 ,100);
+  // autoIntake = 100;
+  // task::sleep(300);
+  //       printf("%f Time after arms up\n", Brain.Timer.time(msec));
+  //       printf("%f InchesF after arms up\n", forwardDistance);
+  // armsMove(2,-35);
+  // armsDown();
+  //       printf("%f Time after arms down\n", Brain.Timer.time(msec));
+  //       printf("%f InchesF after arms down\n", forwardDistance);
+  forwardFunction(-16, 20, 100, 5, false);
   strafeFunction(-15, 20, 50, 50, true);
   strafeFunction(-11, 20, 100, 5, true);
   forwardFunction(27, 20, 30, 5, true);
@@ -103,7 +103,7 @@ void smallGoal (int alliance)
   forwardFunction(-8, 20, 100, 5, false);
   strafeFunction(-10, 5, 50, 50, true);
   autoIntake = 100;
-  strafeFunction(-19, 50, 100, 5, true);
+  strafeFunction(-20, 50, 100, 5, true);
   gyroActive = false;
   strafeOutput = -20 * allianceColor;
   goalDrive();
