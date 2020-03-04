@@ -39,6 +39,7 @@ extern void autonTaskStart();
 extern void forwardFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern void strafeFunction  (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern void turnFunction    (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
+extern void moveTurn        (double distance, double degrees, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
 extern double forwardOutput;
 extern double strafeOutput;
 extern double turnOutput;

@@ -87,7 +87,7 @@ int strafeTask()
     while(!autoAbort && fabs(strafeDistance - startDistance) < fabs(strafeStruct.distance))
     {
       strafeOutput = rampMath(fabs(strafeDistance - startDistance), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
-      strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance * strafeSpeedP;
+      strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance;
       task::sleep(5);
     }
     strafeStruct.isMoving = false;
@@ -100,9 +100,9 @@ int strafeTask()
 
 /*===========================================================================*/
 
-void turnFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
+void turnFunction (double degrees, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
 {
-  turnStruct = {distance * allianceColor, startSpeed, maxSpeed, endSpeed, true};
+  turnStruct = {degrees * allianceColor, startSpeed, maxSpeed, endSpeed, true};
   if (waitForCompletion)
   {
     waitUntil(!turnStruct.isMoving);
@@ -134,6 +134,30 @@ int turnTask()
     task::sleep(5);
   }
   return(0);
+}
+
+
+void moveTurn (double distance, double degrees, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
+{
+  double forwardStartDistance = forwardDistance;
+  double strafeStartDistance = strafeDistance;
+  double headingStart = headingDeg;
+  turnFunction (degrees, startSpeed, maxSpeed, endSpeed, false);
+  while ((forwardDistance < forwardStartDistance + distance / 2) && (strafeDistance < strafeStartDistance + distance / 2)){
+    if (forwardDistance < forwardStartDistance + distance / 2)
+    forwardOutput = ((gyroYaw - headingStart) / degrees * 100);
+    else
+    forwardOutput = 0;
+
+    if (strafeDistance < strafeStartDistance + distance / 2)
+    strafeOutput  = ((gyroYaw - headingStart) / degrees * -100 + 100 );
+    else
+    strafeOutput  = 0;
+    task::sleep(5);
+  }
+  forwardOutput = 0;
+  strafeOutput  = 0;
+  waitUntil(!turnStruct.isMoving);
 }
 
 /*===========================================================================*/

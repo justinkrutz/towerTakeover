@@ -93,6 +93,8 @@ double trayButton (0);
 
 double armsStick (0);
 
+double driveSpeed(1);
+
 
 /*===========================================================================*/
 
@@ -100,9 +102,9 @@ int motorTask()
 {
   while(1)
   {
-  double moveForward = forwardOutput + stickForward + autoDrive;
-  double moveStrafe  = strafeOutput  + stickStrafe + visionStrafe;
-  double moveTurn    = turnOutput    + stickTurn + visionTurn;
+  double moveForward = ( forwardOutput + stickForward + autoDrive );
+  double moveStrafe  = ( strafeOutput  + stickStrafe + visionStrafe ) * strafeSpeedP;
+  double moveTurn    = ( turnOutput    + stickTurn + visionTurn );
 
   frontRight.spin(fwd, moveForward - moveStrafe - moveTurn, pct);
   frontLeft.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
@@ -176,7 +178,7 @@ void goalDrive ()
 {
   task task5 = task( goalIntake );
 
-  double time = Brain.Timer.time(msec);
+  // double time = Brain.Timer.time(msec);
 
   Drivetrain.resetRotation();
   Drivetrain.setStopping(brake);
@@ -220,7 +222,7 @@ void trayUp() {
     task trayUpDriveTask ( trayUpDrive );
 
     double tempTray;
-    while (tray.position(deg) < 670 && !autoAbort) {
+    while (tray.position(deg) < 730 && !autoAbort) {
       tempTray = ( tray.position(deg) * -0.171 + 120 );
       if (tray.position(deg) > 620) {
         tempTray = ( tray.position(deg) * 0.3 - 172 );
@@ -499,11 +501,10 @@ void trayReset ()
   tray.resetPosition();
 }
 
-void test()
+void driveSlow()
 {
-  armsMove(25, 50);
-  wait(0.5, sec);
-  armsDown();
+  if(driveSpeed == 0.28) driveSpeed = 1;
+  else driveSpeed = 0.28;
 }
 
 
@@ -533,7 +534,7 @@ void pre_auton( void ) {
   Inertial.calibrate();
   menuLcdDraw();
   controllerDraw();
-  tray.setStopping(brake);
+  tray.setStopping(hold);
   tray.setTimeout(1, seconds);
 
   tipWheel.released(tipWheelTrigger);
@@ -545,8 +546,10 @@ void pre_auton( void ) {
   Controller1.ButtonR2.pressed(intakeIn);
   Controller1.ButtonR1.pressed(intakeOutSlow);
 
-  Controller1.ButtonL2.pressed(visionTurnFunction);
-  Controller1.ButtonL1.pressed(visionStrafeFunction);
+  // Controller1.ButtonL2.pressed(visionTurnFunction);
+  // Controller1.ButtonL1.pressed(visionStrafeFunction);
+
+  Controller1.ButtonL2.pressed(driveSlow);
 
   Controller1.ButtonUp.pressed(armsHigh);
   Controller1.ButtonDown.pressed(armsLow);
@@ -586,7 +589,7 @@ void pre_auton( void ) {
 
   while (!Competition.isAutonomous() || !Competition.isEnabled()) {
     menuLcdTouch();
-    vex::task::sleep(20);
+    vex::task::sleep(5);
   }
 }
 
@@ -632,7 +635,7 @@ void usercontrol( void ) {
     // }
 
 
-    stickForward = Controller1.Axis2.position();
+    stickForward = Controller1.Axis2.position() * driveSpeed;
     stickStrafe = Controller1.Axis1.position() * strafeSpeedP;
     stickTurn = Controller1.Axis4.position() * (Controller1.Axis3.position() + 150) / 200;
 

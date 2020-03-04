@@ -194,12 +194,20 @@ void skillsOne()
         printf("%f InchesF end\n", forwardDistance);
 }
 
+void testAuton ()
+{
+  moveTurn(75, 87.282428, 100, 100, 100);
+}
+
+
+
 void autonRun(int auton)
 {
   switch(auton)
   {
     case 0:
-    none();
+    // none();
+    testAuton();
     break;
     case 8:
     skillsOne();
