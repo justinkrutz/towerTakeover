@@ -17,16 +17,6 @@
 
 /*----------------------------------------------------------------------------*/
 
-// extern vex::competition Competition;
-// extern vex::brain Brain;
-// extern vex::controller Controller1;
-// extern vex::motor FrontRightMotor;
-// extern vex::motor FrontLeftMotor;
-// extern vex::motor BackRightMotor;
-// extern vex::motor BackLeftMotor;
-
-/*----------------------------------------------------------------------------*/
-
 extern void menuLcdDraw();
 extern void controllerDraw();
 extern void menuLcdTouch();
@@ -99,8 +89,8 @@ extern double gyroYawStart;
 #define strafeDistanceP (32.243767313)
 #define strafeSpeedP (1.12551980572)
 
-#define forwardDistance ((frontLeft.rotation(deg) + backLeft.rotation(deg) + frontRight.rotation(deg) + backRight.rotation(deg)) / 4 / forwardDistanceP)
-#define strafeDistance ((frontLeft.rotation(deg) - backLeft.rotation(deg) + backRight.rotation(deg) - frontRight.rotation(deg)) / 4 / strafeDistanceP)
+#define forwardDistance ((FrontLeftDrive.rotation(deg) + BackLeftDrive.rotation(deg) + FrontRightDrive.rotation(deg) + BackRightDrive.rotation(deg)) / 4 / forwardDistanceP)
+#define strafeDistance ((FrontLeftDrive.rotation(deg) - BackLeftDrive.rotation(deg) + BackRightDrive.rotation(deg) - FrontRightDrive.rotation(deg)) / 4 / strafeDistanceP)
 
 #define blueAlliance 1
 #define redAlliance -1

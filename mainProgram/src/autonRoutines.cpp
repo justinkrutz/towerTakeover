@@ -4,27 +4,27 @@ using namespace vex;
 
 int deployTray()
 {
-  tray.setBrake(coast);
-  tray.setPosition(-100, deg);
-  while (!autoAbort && tray.position(deg) < 250){
-  autoTray = tray.position(deg) * -1 + 255;
+  Tray.setBrake(coast);
+  Tray.setPosition(-100, deg);
+  while (!autoAbort && Tray.position(deg) < 250){
+  autoTray = Tray.position(deg) * -1 + 255;
   task::sleep(5);
   }
 
-  while (!autoAbort && tray.position(deg) > 100){
-    if (tray.position(deg) < 250) autoTray = ((tray.position(deg) - 255));
+  while (!autoAbort && Tray.position(deg) > 100){
+    if (Tray.position(deg) < 250) autoTray = ((Tray.position(deg) - 255));
     else autoTray = -5;
   task::sleep(5);
   }
 
-  while (!autoAbort && tray.position(deg) > 1){
-  autoTray = tray.position(deg) * -1 - 5;
+  while (!autoAbort && Tray.position(deg) > 1){
+  autoTray = Tray.position(deg) * -1 - 5;
   task::sleep(5);
   }
 
   autoTray = 0;
   task::sleep(1000);
-  tray.setBrake(coast);
+  Tray.setBrake(coast);
   return 0;
 }
 
@@ -41,7 +41,7 @@ void none()
 {
   task deployTrayTask = ( deployTray );
   forwardFunction(11, 20, 50, 10, false);
-  waitUntil(!tipWheel);
+  waitUntil(!TipWheel);
   task::sleep(450);
   autoIntake = -100;
   task::sleep(200);
@@ -64,7 +64,7 @@ void smallGoal (int alliance)
   forwardFunction(11, 20, 50, 10, false);
         printf("%f Time after FF1\n", Brain.Timer.time(msec));
 
-  waitUntil(!tipWheel);
+  waitUntil(!TipWheel);
         printf("%f Time after wait1\n", Brain.Timer.time(msec));
         printf("%f InchesF after wait1\n", forwardDistance);
   task::sleep(450);

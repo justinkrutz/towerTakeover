@@ -1,10 +1,4 @@
-# VEXcode mkenv.mk 2019_03_26_02
-
-# version for clang headers
-ifneq ("$(origin HEADERS)", "command line")
-HEADERS = 7.0.0
-endif
-
+# VEXcode mkenv.mk 2019_06_06_01
 
 # macros to help with windows paths that include spaces
 sp :=
@@ -15,6 +9,11 @@ sq = $(subst $(sp),?,$1)
 # default platform and build location
 PLATFORM  = vexv5
 BUILD     = build
+
+# version for clang headers
+ifneq ("$(origin HEADERS)", "command line")
+HEADERS = 8.0.0
+endif
 
 # Project name passed from app
 ifeq ("$(origin P)", "command line")
