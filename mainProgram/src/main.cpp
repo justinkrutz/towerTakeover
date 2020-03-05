@@ -525,7 +525,10 @@ void driveSlow()
 
 
 
+void unassign()
+{
 
+}
 
 void tipWheelTrigger()
 {
@@ -544,6 +547,8 @@ void pre_auton( void ) {
   Tray.setTimeout(1, seconds);
 
   TipWheel.released(tipWheelTrigger);
+
+  Brain.Screen.pressed(menuLcdTouch);
 
   Controller1.ButtonY.pressed(trayUp);
   Controller1.ButtonX.pressed(trayStart);
@@ -593,10 +598,8 @@ void pre_auton( void ) {
   autonTaskStart();
 
 
-  while (!Competition.isAutonomous() || !Competition.isEnabled()) {
-    menuLcdTouch();
-    vex::task::sleep(5);
-  }
+  waitUntil(!(!Competition.isAutonomous() || !Competition.isEnabled()));
+  Brain.Screen.pressed(unassign);
 }
 
 /*===========================================================================*/

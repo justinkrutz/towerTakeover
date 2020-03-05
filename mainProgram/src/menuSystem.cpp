@@ -259,9 +259,6 @@ void controllerDraw() {
 }
 
 void menuLcdTouch(){
-  if (Brain.Screen.pressing() && !screenPressed) {
-    screenPressed = true;
-
     if (Brain.Screen.xPosition() < 47 && Brain.Screen.yPosition() < 32) {
       currentPage = pages[currentPage].parentPageNumber; // Up
     } else if (Brain.Screen.xPosition() > 433 && Brain.Screen.yPosition() < 32) {
@@ -286,9 +283,6 @@ void menuLcdTouch(){
     }
     menuLcdDraw();
     controllerDraw();
-  } else if (!Brain.Screen.pressing() && screenPressed) {
-    screenPressed = false;
-  }
 }
 
 void autonIndicator() {
