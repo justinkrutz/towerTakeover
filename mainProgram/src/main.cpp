@@ -106,11 +106,22 @@ double driveSpeed(1);
 
 int motorTask()
 {
+  double moveForward;
+  double moveStrafe;
+  double moveTurn;
+  double m;
   while(1)
   {
-  double moveForward = ( forwardOutput + stickForward + autoDrive );
-  double moveStrafe  = ( strafeOutput  + stickStrafe + visionStrafe ) * strafeSpeedP;
-  double moveTurn    = ( turnOutput    + stickTurn + visionTurn );
+  moveForward = ( forwardOutput + stickForward + autoDrive );
+  moveStrafe  = ( strafeOutput + stickStrafe + visionStrafe ) * strafeSpeedP;
+  moveTurn    = ( turnOutput    + stickTurn + visionTurn );
+
+  if(fabs(moveForward + moveStrafe + moveTurn) > 100) {
+    m = 100 / (moveForward + moveStrafe + moveTurn);
+    moveForward = moveForward * sign(moveForward) * m;
+    moveStrafe  = moveStrafe  * sign(moveStrafe)  * m;
+    moveTurn    = moveTurn    * sign(moveTurn)    * m;
+  }
 
   FrontRightDrive.spin(fwd, moveForward - moveStrafe - moveTurn, pct);
   FrontLeftDrive.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
@@ -121,6 +132,7 @@ int motorTask()
   IntakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + autoIntake), percent);
   Arms.spin(fwd, armsStick + autoArms, pct);
   Tray.spin(fwd, autoTray + trayStick + trayButton, percent);
+  task::sleep(5);
   }
   
   return(0);
@@ -606,7 +618,7 @@ void pre_auton( void ) {
 
 void autonomous( void ) {
   autonIndicator();
-  autonInitialize();
+  autonReset();
   autonRun(currentPage);
 
   wait(2, sec);
@@ -617,8 +629,15 @@ void autonomous( void ) {
 /*===========================================================================*/
 
 void usercontrol( void ) {
+  autonReset();
   Drivetrain.setStopping(coast);
   printf("%f Degrees drive\n", gyroYaw);
+  double stickForwardLast (0);
+  double stickForwardTemp (0);
+  double stickStrafeLast (0);
+  double stickStrafeTemp (0);
+  double stickTurnLast (0);
+  double stickTurnTemp (0);
   while (1) {
     // if (axis3Prop + autoDrive > Drivetrain.velocity(pct) + 20) {
     //   rampDrive = rampDrive + loopTime.time()/5;
@@ -628,25 +647,36 @@ void usercontrol( void ) {
     //   rampDrive = axis3Prop + autoDrive;
     // }
 
-    // if (Controller1.ButtonUp.pressing()) 
-    // {
-    //   autoTurn = vision1.largestObject.centerX;
-    // }
+    stickForwardTemp = Controller1.Axis2.position() * driveSpeed;
+    stickStrafeTemp = Controller1.Axis1.position() * strafeSpeedP;
+    stickTurnTemp = Controller1.Axis4.position() * (Controller1.Axis3.position() + 150) / 200;
 
+    if(stickForwardTemp > stickForwardLast + loopTime * 0.2) {
+      stickForwardTemp = stickForwardLast + loopTime * 0.2;
+    } else if(stickForwardTemp < stickForwardLast - loopTime * 0.2) {
+      stickForwardTemp = stickForwardLast - loopTime * 0.2;
+    }
 
+    if(stickStrafeTemp > stickStrafeLast + loopTime * 0.2) {
+      stickStrafeTemp = stickStrafeLast + loopTime * 0.2;
+    } else if(stickStrafeTemp < stickStrafeLast - loopTime * 0.2) {
+      stickStrafeTemp = stickStrafeLast - loopTime * 0.2;
+    }
 
-    // loopTime.reset();
+    if(stickTurnTemp > stickTurnLast + loopTime * 0.2) {
+      stickTurnTemp = stickTurnLast + loopTime * 0.2;
+    } else if(stickTurnTemp < stickTurnLast - loopTime * 0.2) {
+      stickTurnTemp = stickTurnLast - loopTime * 0.2;
+    }
 
-    // if(leftIntakeSwitch.pressing() && rightIntakeSwitch.pressing() ){
-    //   intakeJammed = 1;
-    // } else {
-    //   intakeJammed = -1;
-    // }
+    stickForwardLast = stickForwardTemp;
+    stickStrafeLast = stickStrafeTemp;
+    stickTurnLast = stickTurnTemp;
+    loopTime.reset();
 
-
-    stickForward = Controller1.Axis2.position() * driveSpeed;
-    stickStrafe = Controller1.Axis1.position() * strafeSpeedP;
-    stickTurn = Controller1.Axis4.position() * (Controller1.Axis3.position() + 150) / 200;
+    stickForward = stickForwardTemp;
+    stickStrafe = stickStrafeTemp;
+    stickTurn = stickTurnTemp;
 
 
 
@@ -700,7 +730,7 @@ void usercontrol( void ) {
     // printf("%f Tray velocity\n", Tray.velocity(pct));
     // printf("%f auto Tray\n\n", autoTray);
 
-    vex::task::sleep(20); //Sleep the task for a short amount of time to prevent wasted resources. 
+    vex::task::sleep(5); //Sleep the task for a short amount of time to prevent wasted resources. 
   }
 }
 

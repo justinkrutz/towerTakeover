@@ -56,7 +56,7 @@ int forwardTask()
     while(!autoAbort && fabs(forwardDistance - startDistance) < fabs(forwardStruct.distance))
     {
       forwardOutput = rampMath(fabs(forwardDistance - startDistance), fabs(forwardStruct.distance), forwardStruct.startSpeed, forwardStruct.maxSpeed,
-      forwardStruct.endSpeed) * fabs(forwardStruct.distance) / forwardStruct.distance;
+      forwardStruct.endSpeed) * sign(forwardStruct.distance);
       task::sleep(5);
     }
     forwardStruct.isMoving = false;
@@ -87,7 +87,7 @@ int strafeTask()
     while(!autoAbort && fabs(strafeDistance - startDistance) < fabs(strafeStruct.distance))
     {
       strafeOutput = rampMath(fabs(strafeDistance - startDistance), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
-      strafeStruct.endSpeed) * fabs(strafeStruct.distance) / strafeStruct.distance;
+      strafeStruct.endSpeed) * sign(strafeStruct.distance);
       task::sleep(5);
     }
     strafeStruct.isMoving = false;
@@ -124,7 +124,7 @@ int turnTask()
     while(!autoAbort && fabs(gyroYaw - headingDeg) <= fabs(turnStruct.distance))
     {
       turnOutput = rampMath(fabs(gyroYaw - headingDeg), fabs(turnStruct.distance), turnStruct.startSpeed, turnStruct.maxSpeed,
-      turnStruct.endSpeed, 0.2, 1) * fabs(turnStruct.distance) / turnStruct.distance;
+      turnStruct.endSpeed, 0.2, 1) * sign(turnStruct.distance);
       task::sleep(5);
     }
     turnStruct.isMoving = false;
@@ -137,20 +137,21 @@ int turnTask()
 }
 
 
-void moveTurn (double distance, double degrees, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
+void moveTurn (double distance, double actualDegrees, double sensorDegrees, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion)
 {
   double forwardStartDistance = forwardDistance;
   double strafeStartDistance = strafeDistance;
   double headingStart = headingDeg;
-  turnFunction (degrees, startSpeed, maxSpeed, endSpeed, false);
-  while ((forwardDistance < forwardStartDistance + distance / 2) && (strafeDistance < strafeStartDistance + distance / 2)){
-    if (forwardDistance < forwardStartDistance + distance / 2)
-    forwardOutput = ((gyroYaw - headingStart) / degrees * 100);
+  double sensorError = actualDegrees / sensorDegrees;
+  turnFunction (sensorDegrees, startSpeed, maxSpeed, endSpeed, false);
+  while ((forwardDistance < forwardStartDistance + distance * 0.5) && (strafeDistance < strafeStartDistance + distance * 0.5)){
+    if (forwardDistance < forwardStartDistance + distance * 0.5)
+    forwardOutput = ( sin(((gyroYaw - headingStart) * sensorError) * 0.00555555555556 * M_PI) ) * 30;
     else
     forwardOutput = 0;
 
-    if (strafeDistance < strafeStartDistance + distance / 2)
-    strafeOutput  = ((gyroYaw - headingStart) / degrees * -100 + 100 );
+    if (strafeDistance < strafeStartDistance + distance * 0.5)
+    strafeOutput  = ( sin(((gyroYaw - headingStart) * sensorError) * 0.00555555555556 * M_PI) ) * 30;
     else
     strafeOutput  = 0;
     task::sleep(5);
@@ -162,7 +163,7 @@ void moveTurn (double distance, double degrees, int startSpeed, int maxSpeed, in
 
 /*===========================================================================*/
 
-void autonInitialize()
+void autonReset()
 {
   forwardStruct = {0, 0, 0, 0, false};
   strafeStruct = {0, 0, 0, 0, false};

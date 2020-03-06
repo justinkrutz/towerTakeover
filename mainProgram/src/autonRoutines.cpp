@@ -196,7 +196,11 @@ void skillsOne()
 
 void testAuton ()
 {
-  moveTurn(75, 87.282428, 100, 100, 100);
+  // forwardFunction(12, 5, 50, 5, true);
+  // strafeFunction(12, 5, 50, 5, true);
+  // forwardFunction(-12, 5, 50, 5, false);
+  // strafeFunction(-12, 5, 50, 5, true);
+  moveTurn(48, 90, 87.282428, 15, 15, 15);
 }
 
 
