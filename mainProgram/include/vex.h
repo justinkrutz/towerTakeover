@@ -85,12 +85,12 @@ extern void autonRun(int auton);
 extern double gyroYawStart;
 #define gyroYaw ((Inertial.rotation(deg) - gyroYawStart))
 
-#define forwardDistanceP (28.647889757)
-#define strafeDistanceP (32.243767313)
+#define forwardDistanceP (0.0349065850393)
+#define strafeDistanceP (0.0310137457045)
 #define strafeSpeedP (1.12551980572)
 
-#define forwardDistance ((FrontLeftDrive.rotation(deg) + BackLeftDrive.rotation(deg) + FrontRightDrive.rotation(deg) + BackRightDrive.rotation(deg)) * 0.25 / forwardDistanceP)
-#define strafeDistance ((FrontLeftDrive.rotation(deg) - BackLeftDrive.rotation(deg) + BackRightDrive.rotation(deg) - FrontRightDrive.rotation(deg)) * 0.25 / strafeDistanceP)
+#define forwardDistance ((FrontLeftDrive.rotation(deg) + BackLeftDrive.rotation(deg) + FrontRightDrive.rotation(deg) + BackRightDrive.rotation(deg)) * 0.25 * forwardDistanceP)
+#define strafeDistance ((FrontLeftDrive.rotation(deg) - BackLeftDrive.rotation(deg) + BackRightDrive.rotation(deg) - FrontRightDrive.rotation(deg)) * 0.25 * strafeDistanceP)
 
 #define blueAlliance 1
 #define redAlliance -1

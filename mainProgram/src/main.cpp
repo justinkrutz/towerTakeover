@@ -32,8 +32,9 @@
 #include "vex.h"
 
 using namespace vex;
-vex::competition Competition;
-vex::timer loopTime;
+competition Competition;
+timer LoopTime;
+timer PrintTime;
 motor_group intake ( IntakeLeft, IntakeRight );
 motor_group Drivetrain ( FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive );
 
@@ -53,10 +54,6 @@ motor_group Drivetrain ( FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRig
 #define cubeGreen FrontVision__SIG_1
 #define cubeOrange FrontVision__SIG_2
 #define cubePurple FrontVision__SIG_3
-
-// double forwardDistanceP(28.647889757);
-// double strafeDistanceP(32.243767313);
-// double strafeSpeedP(1.12551980572);
 
 double stickForward(0);
 double stickStrafe(0);
@@ -96,6 +93,8 @@ bool Button(true);
 
 double trayStick (0);
 double trayButton (0);
+double intakeStick (0);
+double intakeStickTwist (0);
 
 double armsStick (0);
 
@@ -116,20 +115,20 @@ int motorTask()
   moveStrafe  = ( strafeOutput + stickStrafe + visionStrafe ) * strafeSpeedP;
   moveTurn    = ( turnOutput    + stickTurn + visionTurn );
 
-  if(fabs(moveForward + moveStrafe + moveTurn) > 100) {
-    m = 100 / (moveForward + moveStrafe + moveTurn);
-    moveForward = moveForward * sign(moveForward) * m;
-    moveStrafe  = moveStrafe  * sign(moveStrafe)  * m;
-    moveTurn    = moveTurn    * sign(moveTurn)    * m;
+  if(fabs(moveForward) + fabs(moveStrafe) + fabs(moveTurn) > 100) {
+    m = 100 / (fabs(moveForward) + fabs(moveStrafe) + fabs(moveTurn));
+    moveForward = moveForward * /* sign(moveForward) * */ m;
+    moveStrafe  = moveStrafe  * /* sign(moveStrafe)  * */ m;
+    moveTurn    = moveTurn    * /* sign(moveTurn)    * */ m;
   }
 
-  FrontRightDrive.spin(fwd, moveForward - moveStrafe - moveTurn, pct);
-  FrontLeftDrive.spin(fwd,  moveForward + moveStrafe + moveTurn, pct);
-  BackRightDrive.spin(fwd,  moveForward + moveStrafe - moveTurn, pct);
-  BackLeftDrive.spin(fwd,   moveForward - moveStrafe + moveTurn, pct);
+  FrontRightDrive.spin (fwd,moveForward - moveStrafe - moveTurn, pct);
+  FrontLeftDrive.spin  (fwd,moveForward + moveStrafe + moveTurn, pct);
+  BackRightDrive.spin  (fwd,moveForward + moveStrafe - moveTurn, pct);
+  BackLeftDrive.spin   (fwd,moveForward - moveStrafe + moveTurn, pct);
 
-  IntakeLeft.spin(fwd, (-Controller2.Axis3.position() - Controller2.Axis4.position() + autoIntake), percent);
-  IntakeRight.spin(fwd, (-Controller2.Axis3.position() + Controller2.Axis4.position() + autoIntake), percent);
+  IntakeLeft.spin  (fwd, (intakeStick + intakeStickTwist + autoIntake), percent);
+  IntakeRight.spin (fwd, (intakeStick - intakeStickTwist + autoIntake), percent);
   Arms.spin(fwd, armsStick + autoArms, pct);
   Tray.spin(fwd, autoTray + trayStick + trayButton, percent);
   task::sleep(5);
@@ -182,11 +181,11 @@ int goalIntake()
 {
   double pos = intake.position(deg);
   intakeMoving = true;
-  // if (LineTrackerTray.value(pct) > 70 && !autoAbort) {
+  if (LineTrackerTray.value(pct) > 70 && !autoAbort) {
   autoIntake = -30;
-  waitUntil(/* autoAbort || LineTrackerTray.value(pct) < 50 || */ intake.position(deg) < pos - 150);
+  waitUntil(autoAbort || LineTrackerTray.value(pct) < 50 || intake.position(deg) < pos - 200);
   autoIntake = 0;
-  // }
+  }
 
   intakeMoving = false;
   return 0;
@@ -236,7 +235,6 @@ void trayUp() {
     printf("%f trayUp pos\n", Tray.position(deg));
     trayMoving = true;
     autoIntake = 0;
-    autoArms = -10;
     task trayUpDriveTask ( trayUpDrive );
 
     double tempTray;
@@ -245,19 +243,16 @@ void trayUp() {
       if (Tray.position(deg) > 620) {
         tempTray = ( Tray.position(deg) * 0.3 - 172 );
         printf("trayUp mid\n");
-      } else if (Tray.position(deg) > 400) {
-        autoIntake = 0;
-      } else if (Tray.position(deg) > 0) {
-        autoIntake = -15;
+      } else if (Tray.position(deg) > 300) {
+        Arms.setStopping(coast);
       } else {
-        autoIntake = 0;
+        Arms.setStopping(hold);
       }
       autoTray = tempTray;
-      vex::task::sleep(20);
+      vex::task::sleep(5);
     }
     autoTray = 0;
     autoIntake = 0;
-    autoArms = 0;
     autoDrive = 0;
     trayMoving = false;
     printf("trayUp end\n");
@@ -266,9 +261,15 @@ void trayUp() {
 
 int trayDownDrive()
 {
+    Arms.setStopping(hold);
     forwardFunction(-6, 25, 25, 5, false);
     wait(0.1, sec);
     intakeSpin(360, -100);
+    while(Arms.position(deg) < 0) {
+      autoArms = 5;
+      vex::task::sleep(5);
+    }
+      autoArms = 0;
     printf("%f Time after trayDown\n", Brain.Timer.time(msec));
     printf("%f InchesF after trayDown\n", forwardDistance);
   return 0;
@@ -323,7 +324,7 @@ void armsMove (double degrees, double percent, vex::brakeType brakeType)
   if (percent > 0) waitUntil(autoAbort || fabs(Arms.position(deg)) >= fabs(degrees * 5));
   else if (percent < 0) waitUntil(autoAbort || fabs(Arms.position(deg)) <= fabs(degrees * 5));
   autoArms = 0;
-  Arms.setBrake(brakeType);
+  Arms.setStopping(brakeType);
 }
 
 void armsDown ()
@@ -337,7 +338,7 @@ void armsDown ()
     }
     autoArms = 0;
     armsMoving = false;
-  Arms.setBrake(brake);
+  // Arms.setStopping(brake);
   armsPos = down;
   }
 }
@@ -356,7 +357,7 @@ void armsHigh ()
       }
       autoArms = 0;
       armsMoving = false;
-      Arms.setBrake(hold);
+      // Arms.setStopping(hold);
       armsPos = high;
     } else {
       intakeSpin(100, -100);
@@ -382,7 +383,7 @@ void armsLow ()
       }
       autoArms = 0;
       armsMoving = false;
-      Arms.setBrake(hold);
+      // Arms.setStopping(hold);
       armsPos = low;
     } else {
       intakeSpin(360, -100);
@@ -519,10 +520,15 @@ void trayReset ()
   Tray.resetPosition();
 }
 
+void armsReset ()
+{
+  Arms.resetPosition();
+}
+
 void driveSlow()
 {
-  if(driveSpeed == 0.28) driveSpeed = 1;
-  else driveSpeed = 0.28;
+  if(driveSpeed == 0.5) driveSpeed = 1;
+  else driveSpeed = 0.5;
 }
 
 
@@ -591,13 +597,14 @@ void pre_auton( void ) {
   Controller2.ButtonA.pressed(trayDown);
 
   Controller2.ButtonR1.pressed(trayReset);
-  Controller2.ButtonL2.pressed(skillsOne);
+  Controller2.ButtonL1.pressed(armsReset);
+
 
 
 
   // Drivetrain.setTimeout(3, seconds);
   Arms.setTimeout(1, seconds);
-  Arms.setStopping(brake);
+  Arms.setStopping(hold);
 
   intake.setTimeout(1, seconds);
   intake.setStopping(hold);
@@ -631,55 +638,55 @@ void autonomous( void ) {
 void usercontrol( void ) {
   autonReset();
   Drivetrain.setStopping(coast);
+  Arms.setPosition(-73, degrees);
+  while(Arms.position(deg) < 0) {
+  autoArms = 5;
+  vex::task::sleep(5);
+  }
+  autoArms = 0;
+
   printf("%f Degrees drive\n", gyroYaw);
+  printf("%f Degrees Arms\n", Arms.position(deg));
+
   double stickForwardLast (0);
   double stickForwardTemp (0);
   double stickStrafeLast (0);
   double stickStrafeTemp (0);
   double stickTurnLast (0);
   double stickTurnTemp (0);
+
+  bool overTemp (false);
   while (1) {
-    // if (axis3Prop + autoDrive > Drivetrain.velocity(pct) + 20) {
-    //   rampDrive = rampDrive + loopTime.time()/5;
-    // } else if (axis3Prop + autoDrive < Drivetrain.velocity(pct) - 20) {
-    //   rampDrive = rampDrive - loopTime.time()/5;
-    // } else if (axis3Prop + autoDrive <= Drivetrain.velocity(pct) + 20 && axis3Prop + autoDrive >= Drivetrain.velocity(pct) - 20) {
-    //   rampDrive = axis3Prop + autoDrive;
-    // }
-
     stickForwardTemp = Controller1.Axis2.position() * driveSpeed;
-    stickStrafeTemp = Controller1.Axis1.position() * strafeSpeedP;
-    stickTurnTemp = Controller1.Axis4.position() * (Controller1.Axis3.position() + 150) / 200;
+    stickStrafeTemp = Controller1.Axis1.position() * driveSpeed;
+    stickTurnTemp = Controller1.Axis4.position() * ((Controller1.Axis3.position() + 150) * 0.005) * driveSpeed;
 
-    if(stickForwardTemp > stickForwardLast + loopTime * 0.2) {
-      stickForwardTemp = stickForwardLast + loopTime * 0.2;
-    } else if(stickForwardTemp < stickForwardLast - loopTime * 0.2) {
-      stickForwardTemp = stickForwardLast - loopTime * 0.2;
+    if(stickForwardTemp > stickForwardLast + LoopTime * 0.2) {
+      stickForwardTemp = stickForwardLast + LoopTime * 0.2;
+    } else if(stickForwardTemp < stickForwardLast - LoopTime * 0.2) {
+      stickForwardTemp = stickForwardLast - LoopTime * 0.2;
     }
 
-    if(stickStrafeTemp > stickStrafeLast + loopTime * 0.2) {
-      stickStrafeTemp = stickStrafeLast + loopTime * 0.2;
-    } else if(stickStrafeTemp < stickStrafeLast - loopTime * 0.2) {
-      stickStrafeTemp = stickStrafeLast - loopTime * 0.2;
+    if(stickStrafeTemp > stickStrafeLast + LoopTime * 0.2) {
+      stickStrafeTemp = stickStrafeLast + LoopTime * 0.2;
+    } else if(stickStrafeTemp < stickStrafeLast - LoopTime * 0.2) {
+      stickStrafeTemp = stickStrafeLast - LoopTime * 0.2;
     }
 
-    if(stickTurnTemp > stickTurnLast + loopTime * 0.2) {
-      stickTurnTemp = stickTurnLast + loopTime * 0.2;
-    } else if(stickTurnTemp < stickTurnLast - loopTime * 0.2) {
-      stickTurnTemp = stickTurnLast - loopTime * 0.2;
+    if(stickTurnTemp > stickTurnLast + LoopTime * 0.2) {
+      stickTurnTemp = stickTurnLast + LoopTime * 0.2;
+    } else if(stickTurnTemp < stickTurnLast - LoopTime * 0.2) {
+      stickTurnTemp = stickTurnLast - LoopTime * 0.2;
     }
 
     stickForwardLast = stickForwardTemp;
     stickStrafeLast = stickStrafeTemp;
     stickTurnLast = stickTurnTemp;
-    loopTime.reset();
+    LoopTime.reset();
 
     stickForward = stickForwardTemp;
     stickStrafe = stickStrafeTemp;
     stickTurn = stickTurnTemp;
-
-
-
 
 
     if(Controller2.Axis2.position() < - 5 || Controller2.Axis2.position() > 10)
@@ -687,16 +694,19 @@ void usercontrol( void ) {
       if(Controller2.ButtonR2.pressing()) 
       {
         trayStick = 0;
-        armsStick = Controller2.Axis2.position();
+        intakeStick = -Controller2.Axis2.position();
+        intakeStickTwist = Controller2.Axis1.position();
       } else {
-        armsStick = 0;
+        intakeStick = 0;
+        intakeStickTwist = 0;
         trayStick = Controller2.Axis2.position();
       }
     } else {
       trayStick = 0;
-      armsStick = 0;
+      intakeStick = 0;
     }
 
+    armsStick = Controller2.Axis3.position();
 
 
     if (IntakeLeft.torque() > 1.05 || IntakeRight.torque() > 1.05)
@@ -714,22 +724,31 @@ void usercontrol( void ) {
       trayButton = 0;
     }
 
-    // FrontVision.setLedBrightness(100);
-    // FrontVision.setLedColor(244, 244, 244);
+    if(!overTemp &&
+      (int(FrontLeftDrive.temperature() * 0.1) >= 7 ||
+       int(FrontRightDrive.temperature() * 0.1) >= 7 ||
+       int(BackLeftDrive.temperature() * 0.1) >= 7 ||
+       int(BackRightDrive.temperature() * 0.1) >= 7 ||
+       int(IntakeLeft.temperature() * 0.1) >= 7 ||
+       int(IntakeRight.temperature() * 0.1) >= 7 ||
+       int(Tray.temperature() * 0.1) >= 7 ||
+       int(Arms.temperature() * 0.1) >= 7))
+      {
+        Controller1.rumble("...---...");
+        Controller2.rumble("...---...");
+        overTemp = true;
+      }
 
+    if(PrintTime.time(msec) >= 15) {
     Controller1.Screen.clearScreen();
     Controller1.Screen.setCursor(1, 1);
-    Controller1.Screen.print(LineTrackerRight.reflectivity());
+    Controller1.Screen.print("FL%d, FR%d, BL%d, BR%d", int(FrontLeftDrive.temperature() * 0.1), int(FrontRightDrive.temperature() * 0.1), int(BackLeftDrive.temperature() * 0.1), int(BackRightDrive.temperature() * 0.1));
     Controller1.Screen.setCursor(2, 1);
-    Controller1.Screen.print(LineTrackerLeft.reflectivity());
+    Controller1.Screen.print("IL%d, IR%d, T%d, A%d", int(IntakeLeft.temperature() * 0.1), int(IntakeRight.temperature() * 0.1), int(Tray.temperature() * 0.1), int(Arms.temperature() * 0.1));
     Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print(LineTrackerLeft.value(pct));
-
-    // printf("\n%f Time\n", Brain.Timer.time(msec));
-    // printf("%f Tray torque\n", Tray.torque());
-    // printf("%f Tray velocity\n", Tray.velocity(pct));
-    // printf("%f auto Tray\n\n", autoTray);
-
+    Controller1.Screen.print("L%d, R%d, T%d, I%f", LineTrackerLeft.reflectivity(), LineTrackerRight.reflectivity(), LineTrackerTray.reflectivity(), gyroYaw);
+    PrintTime.reset();
+    }
     vex::task::sleep(5); //Sleep the task for a short amount of time to prevent wasted resources. 
   }
 }
