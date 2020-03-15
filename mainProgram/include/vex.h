@@ -15,87 +15,13 @@
 #include "v5.h"
 #include "v5_vcs.h"
 
-/*----------------------------------------------------------------------------*/
 
-extern void menuLcdDraw();
-extern void controllerDraw();
-extern void menuLcdTouch();
-extern void autonIndicator();
-extern int currentPage;
-
-extern double headingDeg;
-extern void autonReset();
-extern void autonTaskStart();
-extern void forwardFunction (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
-extern void strafeFunction  (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
-extern void turnFunction    (double distance, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
-extern void moveTurn        (double distance, double actualDegrees, double sensorDegrees, int startSpeed, int maxSpeed, int endSpeed, bool waitForCompletion = true);
-extern double forwardOutput;
-extern double strafeOutput;
-extern double turnOutput;
-extern double headingDeg;
-extern bool gyroActive;
-
-extern void skillsOne();
-
-struct rampStruct
-{
-  double distance;
-  int startSpeed;
-  int maxSpeed;
-  int endSpeed;
-  bool isMoving;
-};
-
-extern rampStruct forwardStruct;
-extern rampStruct strafeStruct;
-extern rampStruct turnStruct;
-
-extern int allianceColor;
-
-
-extern bool autoAbort;
-
-extern double autoTray;
-extern double autoArms;
-extern double autoDrive;
-extern double autoTurn;
-extern void visionDetectFunction (bool turn, double turnP = 0.5, double time = 0);
-extern bool greenToggle;
-extern bool orangeToggle;
-extern bool purpleToggle;
-
-extern void goalDrive();
-extern void trayUp();
-extern void trayDown();
-extern void intakeSpin(double degrees, double percent);
-extern void armsMove (double degrees, double percent, vex::brakeType brakeType = vex::hold);
-extern void armsDown();
-extern void armsLow();
-extern void armsHigh();
-extern double autoIntake;
-
-extern vex::motor_group intake;
-extern vex::competition Competition;
-extern vex::motor_group Drivetrain;
-
-extern void autonRun(int auton);
 #include "robot-config.h"
 
-extern double gyroYawStart;
-#define gyroYaw ((Inertial.rotation(deg) - gyroYawStart))
 
-#define forwardDistanceP (0.0349065850393)
-#define strafeDistanceP (0.0310137457045)
-#define strafeSpeedP (1.12551980572)
-
-#define forwardDistance ((FrontLeftDrive.rotation(deg) + BackLeftDrive.rotation(deg) + FrontRightDrive.rotation(deg) + BackRightDrive.rotation(deg)) * 0.25 * forwardDistanceP)
-#define strafeDistance ((FrontLeftDrive.rotation(deg) - BackLeftDrive.rotation(deg) + BackRightDrive.rotation(deg) - FrontRightDrive.rotation(deg)) * 0.25 * strafeDistanceP)
-
-#define blueAlliance 1
-#define redAlliance -1
-
-#define sign(value) (value >= 0 ? 1 : -1)
+extern vex::motor_group Intake;
+extern vex::competition Competition;
+extern vex::motor_group Drivetrain;
 
 #define waitUntil(condition)                                                   \
   do {                                                                         \

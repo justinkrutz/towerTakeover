@@ -1,5 +1,9 @@
 #include "vex.h"
 
+#include "driverControl.h"
+#include "autonStructure.h"
+
+
 using namespace vex;
 
 int deployTray()
@@ -39,7 +43,7 @@ int autonStop()
 
 void none()
 {
-  task deployTrayTask = ( deployTray );
+  (task ( deployTray ));
   forwardFunction(11, 20, 50, 10, false);
   waitUntil(!TipWheel);
   task::sleep(450);
@@ -58,7 +62,7 @@ void smallGoal (int alliance)
 
   Brain.Timer.reset();
   Drivetrain.setStopping(hold);
-  task deployTrayTask = ( deployTray );
+  (task ( deployTray ));
         printf("\n%f Time start\n", Brain.Timer.time(msec));
         printf("%f InchesF start\n", forwardDistance);
   forwardFunction(11, 20, 50, 10, false);

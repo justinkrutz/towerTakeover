@@ -1,5 +1,8 @@
 #include "vex.h"
 
+#include "autonStructure.h"
+#include "driverControl.h"
+
 using namespace vex;
 
 
@@ -180,7 +183,7 @@ void autonReset()
 
 void autonTaskStart()
 {
-  task task2 = task( forwardTask );
-  task task3 = task( strafeTask );
-  task task4 = task( turnTask );
+  (task ( forwardTask ));
+  (task ( strafeTask ));
+  (task ( turnTask ));
 }
