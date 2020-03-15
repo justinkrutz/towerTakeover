@@ -34,10 +34,6 @@ bool intakeMoving(false);
 
 bool turboTurn(false);
 
-bool autoAbort(false);
-
-bool autoAbortTray(false);
-
 bool greenToggle(true);
 bool orangeToggle(true);
 bool purpleToggle(true);
@@ -78,9 +74,9 @@ int motorTask()
 
   if(fabs(moveForward) + fabs(moveStrafe) + fabs(moveTurn) > 100) {
     m = 100 / (fabs(moveForward) + fabs(moveStrafe) + fabs(moveTurn));
-    moveForward = moveForward * /* sign(moveForward) * */ m;
-    moveStrafe  = moveStrafe  * /* sign(moveStrafe)  * */ m;
-    moveTurn    = moveTurn    * /* sign(moveTurn)    * */ m;
+    moveForward = moveForward * m;
+    moveStrafe  = moveStrafe  * m;
+    moveTurn    = moveTurn    * m;
   }
 
   FrontRightDrive.spin (fwd,moveForward - moveStrafe - moveTurn, pct);
@@ -106,7 +102,7 @@ int intakeSpin(double degrees, double percent)
 {
   double pos = Intake.position(deg);
   autoIntake = percent;
-  waitUntil(autoAbort || fabs(Intake.position(deg) - pos) > fabs(degrees));
+  waitUntil(fabs(Intake.position(deg) - pos) > fabs(degrees));
   autoIntake = 0;
 
   return 0;
@@ -144,9 +140,9 @@ int goalIntake()
 {
   double pos = Intake.position(deg);
   intakeMoving = true;
-  if (LineTrackerTray.value(pct) > 70 && !autoAbort) {
+  if (LineTrackerTray.value(pct) > 70) {
   autoIntake = -30;
-  waitUntil(autoAbort || LineTrackerTray.value(pct) < 50 || Intake.position(deg) < pos - 200);
+  waitUntil(LineTrackerTray.value(pct) < 50 || Intake.position(deg) < pos - 200);
   autoIntake = 0;
   }
 
@@ -165,7 +161,7 @@ int goalDrive ()
 
 
   autoDrive = 30;
-  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 2
+  waitUntil(LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 20
   /*(Brain.Timer.time(msec) - time > 1200 && Competition.isAutonomous())*/);
   autoDrive = 0;
   wait(0.1, sec);
@@ -173,12 +169,12 @@ int goalDrive ()
   strafeOutput = 0;
 
   autoDrive = -10;
-  waitUntil(autoAbort || LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 20
+  waitUntil(LineTrackerLeft.reflectivity() > 20 || LineTrackerRight.reflectivity() > 20
   /*(Brain.Timer.time(msec) - time > 900 && Competition.isAutonomous())*/);
   
   autoDrive = 0;
   Drivetrain.setStopping(coast);
-  waitUntil(autoAbort || !intakeMoving);
+  waitUntil(!intakeMoving);
 
 
   return 0;
@@ -186,7 +182,7 @@ int goalDrive ()
 
 int trayUpDrive ()
 {
-  waitUntil(autoAbort || Tray.position(deg) > 300);
+  waitUntil(Tray.position(deg) > 300);
   forwardFunction(1.5, 3, 5, 3, false);
   return 0;
 }
@@ -198,7 +194,7 @@ int trayUp() {
     (task ( trayUpDrive ));
 
     double tempTray;
-    while (Tray.position(deg) < 730 && !autoAbort) {
+    while (Tray.position(deg) < 730) {
       tempTray = ( Tray.position(deg) * -0.171 + 120 );
       if (Tray.position(deg) > 620) {
         tempTray = ( Tray.position(deg) * 0.3 - 172 );
@@ -236,14 +232,14 @@ int trayDownDrive()
 
 int trayDown()
 {
-  if(!autoAbort && trayMoving) {
+  if( trayMoving) {
     wait(1, sec);
   }
-  if(!autoAbort && !trayMoving) {
+  if( !trayMoving) {
     trayMoving = true;
     autoIntake = 0;
     (task ( trayDownDrive ));
-    while (Tray.position(deg) > 0 && !autoAbort){
+    while (Tray.position(deg) > 0){
       autoTray = ( ( Tray.position(deg) * -0.32 -50));
       vex::task::sleep(20);
     }
@@ -256,7 +252,6 @@ int trayDown()
 
 int trayStart ()
 {
-  autoAbortTray = false;
   if (Tray.position(deg) > 25){
     trayDown();
   } else {
@@ -270,10 +265,15 @@ int trayStart ()
 
 int trayStop ()
 {
-  autoAbortTray = true;
-  wait(0.3, sec);
-  autoAbortTray = false;
-
+  task::stop( goalDrive );
+  task::stop( trayUp );
+  if (!(autoTray < 0)) {
+  autoArms = 0;
+  autoDrive = 0;
+  autoIntake = 0;
+  autoTray = 0;
+  trayMoving = false;
+  }
   return 0;
 }
 
@@ -285,8 +285,8 @@ int trayStop ()
 int armsMove (double degrees, double percent, vex::brakeType brakeType)
 {
   autoArms = percent;
-  if (percent > 0) waitUntil(autoAbort || fabs(Arms.position(deg)) >= fabs(degrees * 5));
-  else if (percent < 0) waitUntil(autoAbort || fabs(Arms.position(deg)) <= fabs(degrees * 5));
+  if (percent > 0) waitUntil(fabs(Arms.position(deg)) >= fabs(degrees * 5));
+  else if (percent < 0) waitUntil(fabs(Arms.position(deg)) <= fabs(degrees * 5));
   autoArms = 0;
   Arms.setStopping(brakeType);
 
@@ -297,7 +297,7 @@ int armsDown ()
 {
   if(!armsMoving) {
     armsMoving = true;
-    while (Arms.position(deg) > 0 && !autoAbort)
+    while (Arms.position(deg) > 0)
     {
       autoArms = ( ( Arms.position(deg) * -0.25 - 10 ));
       vex::task::sleep(20);
@@ -315,23 +315,24 @@ int armsHigh ()
 {
   if(!armsMoving) {
     if(!(armsPos == armsPosHigh)) {
+      autoArms = 0;
+      armsPos = armsPosHigh;
       armsMoving = true;
       autoIntake = 0;
       intakeSpin(250, -100);
-      while (Arms.position(deg) < 850 && !autoAbort) 
+      while (Arms.position(deg) < 850) 
       {
         autoArms = ( Arms.position(deg) * -0.25 + 222.5 );
         vex::task::sleep(20);
       }
       autoArms = 0;
       armsMoving = false;
-      // Arms.setStopping(hold);
-      armsPos = armsPosHigh;
     } else {
+      autoArms = 0;
       intakeSpin(100, -100);
       autoArms = -100;
       intakeSpin(360, -100);
-      waitUntil(autoAbort || Arms.position(deg) < 600);
+      waitUntil(Arms.position(deg) < 600);
       autoArms = 0;
       armsDown();
     }
@@ -344,18 +345,19 @@ int armsLow ()
 {
   if(!armsMoving) { // are the Arms moving?
     if(armsPos == armsPosDown) {
+      autoArms = 0;
+      armsPos = armsPosLow;
       armsMoving = true;
       autoIntake = 0;
       intakeSpin(230, -100);
-      while (Arms.position(deg) < 600 && !autoAbort) {
+      while (Arms.position(deg) < 600) {
         autoArms = ( Arms.position(deg) * -0.25 + 160 );
         vex::task::sleep(20);
       }
       autoArms = 0;
       armsMoving = false;
-      // Arms.setStopping(hold);
-      armsPos = armsPosLow;
     } else {
+      autoArms = 0;
       intakeSpin(360, -100);
       forwardFunction(-4, 50, 50, 5, false);
       armsDown();
@@ -519,7 +521,49 @@ int driveSlow()
   return 0;
 }
 
+int abortEverything()
+{
+  task::stop( trayUp );
+  task::stop( trayStart );
+  task::stop( trayStop );
+  task::stop( intakeIn );
+  task::stop( intakeOutSlow );
+  task::stop( driveSlow );
+  task::stop( armsHigh );
+  task::stop( armsLow );
+  task::stop( intakeOut );
+  task::stop( orangeToggleButton );
+  task::stop( purpleToggleButton );
+  task::stop( greenToggleButton );
+  task::stop( goalDrive );
+  task::stop( trayUp );
+  task::stop( trayDown );
+  task::stop( trayReset );
+  task::stop( armsReset );
+  task::stop( goalDrive );
+  task::stop( trayUpDrive );
+  task::stop( trayDownDrive );
 
+  autoArms = 0;
+  autoDrive = 0;
+  autoIntake = 0;
+  autoTray = 0;
+  autoTurn = 0;
+  forwardOutput = 0;
+  strafeOutput = 0;
+  visionStrafe = 0;
+  turnOutput = 0;
+  visionTurn = 0;
+
+  armsMoving = false;
+  trayMoving = false;
+  intakeMoving = false;
+
+  armsPos = armsPosLow;
+
+
+  return 0;
+}
 
 
 
@@ -537,6 +581,8 @@ int setButtonCallbacks()
   Controller1.ButtonY.pressed     (startFunction( trayUp ));
   Controller1.ButtonX.pressed     (startFunction( trayStart ));
   Controller1.ButtonX.released    (startFunction( trayStop ));
+  Controller1.ButtonY.released    (startFunction( trayStop ));
+  Controller1.ButtonB.pressed     (startFunction( abortEverything ));
 
   Controller1.ButtonR2.pressed    (startFunction( intakeIn ));
   Controller1.ButtonR1.pressed    (startFunction( intakeOutSlow ));
@@ -600,7 +646,7 @@ void drivetrainControl()
 
 void manualControl()
 {
-  if (Controller1.ButtonA.pressing()){
+  if (Controller1.ButtonA.pressing() && Tray.position(deg) > 0){
     trayButton = -30;
   } else {
     trayButton = 0;

@@ -34,8 +34,6 @@ extern bool trayMoving;
 extern bool armsMoving;
 extern bool intakeMoving;
 extern bool turboTurn;
-extern bool autoAbort;
-extern bool autoAbortTray;
 extern bool greenToggle;
 extern bool orangeToggle;
 extern bool purpleToggle;

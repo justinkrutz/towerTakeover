@@ -56,7 +56,7 @@ int forwardTask()
   {
     waitUntil(forwardStruct.isMoving);
     startDistance = forwardDistance;
-    while(!autoAbort && fabs(forwardDistance - startDistance) < fabs(forwardStruct.distance))
+    while(fabs(forwardDistance - startDistance) < fabs(forwardStruct.distance))
     {
       forwardOutput = rampMath(fabs(forwardDistance - startDistance), fabs(forwardStruct.distance), forwardStruct.startSpeed, forwardStruct.maxSpeed,
       forwardStruct.endSpeed) * sign(forwardStruct.distance);
@@ -87,7 +87,7 @@ int strafeTask()
   {
     waitUntil(strafeStruct.isMoving);
     startDistance = strafeDistance;
-    while(!autoAbort && fabs(strafeDistance - startDistance) < fabs(strafeStruct.distance))
+    while(fabs(strafeDistance - startDistance) < fabs(strafeStruct.distance))
     {
       strafeOutput = rampMath(fabs(strafeDistance - startDistance), fabs(strafeStruct.distance), strafeStruct.startSpeed, strafeStruct.maxSpeed,
       strafeStruct.endSpeed) * sign(strafeStruct.distance);
@@ -124,7 +124,7 @@ int turnTask()
       }
       task::sleep(5);
     }
-    while(!autoAbort && fabs(gyroYaw - headingDeg) <= fabs(turnStruct.distance))
+    while(fabs(gyroYaw - headingDeg) <= fabs(turnStruct.distance))
     {
       turnOutput = rampMath(fabs(gyroYaw - headingDeg), fabs(turnStruct.distance), turnStruct.startSpeed, turnStruct.maxSpeed,
       turnStruct.endSpeed, 0.2, 1) * sign(turnStruct.distance);

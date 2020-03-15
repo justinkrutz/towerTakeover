@@ -10,18 +10,18 @@ int deployTray()
 {
   Tray.setBrake(coast);
   Tray.setPosition(-100, deg);
-  while (!autoAbort && Tray.position(deg) < 250){
+  while (Tray.position(deg) < 250){
   autoTray = Tray.position(deg) * -1 + 255;
   task::sleep(5);
   }
 
-  while (!autoAbort && Tray.position(deg) > 100){
+  while (Tray.position(deg) > 100){
     if (Tray.position(deg) < 250) autoTray = ((Tray.position(deg) - 255));
     else autoTray = -5;
   task::sleep(5);
   }
 
-  while (!autoAbort && Tray.position(deg) > 1){
+  while (Tray.position(deg) > 1){
   autoTray = Tray.position(deg) * -1 - 5;
   task::sleep(5);
   }
@@ -31,15 +31,6 @@ int deployTray()
   Tray.setBrake(coast);
   return 0;
 }
-
-int autonStop()
-{
-  waitUntil(Brain.Timer.time(msec) >= 15000);
-  autoAbort = true;
-  return 0;
-}
-
-
 
 void none()
 {
