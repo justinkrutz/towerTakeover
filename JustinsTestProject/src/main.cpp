@@ -21,9 +21,9 @@ thread menuThread;
 thread driveThread;
 
 #define setVoidFunction( function ) [](void) {function;}
-#define setIntFunction( function ) [](int) {function;}
+#define setIntFunction( function ) [](thread) {function; return 0;}
 
-int countUpTask() {
+void countUpTask() {
   printf("start\n");
   int count = 0;
 
@@ -34,7 +34,7 @@ int countUpTask() {
     task::sleep( 20 );
   }
 
-  return 0;
+  // return 0;
 }
 
 // void countUpTaskStop() 
@@ -44,7 +44,7 @@ int countUpTask() {
 //   }
 // }
 
-int countDownTask() {
+void countDownTask() {
   printf("start\n");
   int count = 0;
 
@@ -55,14 +55,14 @@ int countDownTask() {
     task::sleep( 20 );
   }
 
-  return 0;
+  // return 0;
 }
 
 
-int singleUseButton() 
+void singleUseButton() 
 {
   printf("singleUseButton\n");
-  return 0;
+  // return 0;
 }
 
 
@@ -72,7 +72,7 @@ int singleUseButton()
 struct buttonStruct {
   controller::button button;
   thread * Thread;
-  int (* function)();
+  void (* function)();
 
   bool wasTriggered;
 };
@@ -113,7 +113,7 @@ void runButtons()
 
       // set the function to not run when the button is held
       buttonCallback.wasTriggered = true;
-      *buttonCallback.Thread = buttonCallback.function;
+      *buttonCallback.Thread = thread(buttonCallback.function);
 
     } else if (wasReleased) {
       buttonCallback.wasTriggered = false;
@@ -320,12 +320,12 @@ int controllerMenu::select( void ) {
 void controllerMenu::setCallbacks()
 {
   buttonCallbacks = {
-    {Controller1.ButtonUp,    &menuThread, },
-    {Controller1.ButtonDown,  &menuThread, singleUseButton},
-    {Controller1.ButtonRight, &menuThread, countDownTask},
-    {Controller1.ButtonLeft,  &menuThread, countUpTask},
+    {Controller1.ButtonRight, &menuThread, setVoidFunction( ControllerMenu.scrollRight() )},
+    {Controller1.ButtonLeft,  &menuThread, setVoidFunction( ControllerMenu.scrollLeft() )},
+    {Controller1.ButtonA,    &menuThread, setVoidFunction( ControllerMenu.select() )},
+    {Controller1.ButtonB,  &menuThread, setVoidFunction( ControllerMenu.back() )},
   };
-  // buttonCallbacks[0].function = &scrollLeft;
+  // buttonCallbacks[0].function = setVoidFunction( ControllerMenu.scrollRight() );
   // menuThread = this->scrollRight
 }
 
@@ -347,13 +347,8 @@ void autonomous( void ) {
 }
 
 void usercontrol( void ) {
-  // if (Competition.isEnabled()) 
-  //   setDriveButtonCallbacks();
-  // else
-  // auto lambdaF = [](controllerMenu::*f) {return 0;};
-  // menuThread = [](thread) {ControllerMenu.scrollRight(); return 0;};
-  menuThread = setIntFunction( ControllerMenu.scrollLeft() );
-
+    setDriveButtonCallbacks();
+  // ControllerMenu.setCallbacks();
   ControllerMenu.printMenu();
   while (1) {
     runButtons();
