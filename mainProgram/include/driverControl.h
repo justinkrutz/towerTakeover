@@ -1,4 +1,4 @@
-#define startFunction( function ) [](void) {(task (function));}
+#define setFunction( function ) [](void) {(task (function));}
 
 #define armsPosDown 0
 #define armsPosLow 1

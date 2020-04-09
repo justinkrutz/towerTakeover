@@ -30,7 +30,7 @@ bool screenPressed = false;
 // int currentMenu = 0;
 int currentPage = 0;
 
-struct pageStruct {
+struct Page {
   int parentPageNumber;
   int buttonOnePageNumber;
   int buttonTwoPageNumber;
@@ -47,7 +47,7 @@ struct pageStruct {
 /*===========================================================================*/
 
 
-std::vector <pageStruct> pages = {
+std::vector <Page> pages = {
   ////////    p, b1, b2, b3, b4, --type--, -color-, --------"name"--------, ----------"description"----------,  swSt,  sP
   /*  0 */  { 0,  1,  2,  3,  4,   folder,  __null,                    ""}, 
   /*  1 */  { 0,  5,  0,  0,  0,   folder,     red,                 "Red"}, 
@@ -67,7 +67,7 @@ std::vector <pageStruct> pages = {
   /* 15 */  { 9,  0,  0,  0,  0,  sSwitch,   green,              "Flight",                           "Toggles ability to fly.", false},  
   /* 16 */  { 2,  0,  0,  0,  0,    auton,    blue,     "Blue Small goal",                  "Scores 9 cubes in small blue goal"},
   /* 17 */  { 2,  0,  0,  0,  0,    auton,    blue,          "Large goal",                  "Scores X cubes in large blue goal"},
-  /* 18 */  { 4,  0,  0,  0,  0,    auton,   green,          "Absolutely nothing",                  "We are the robots, who don't do anything!"},
+  /* 18 */  { 4,  0,  0,  0,  0,    auton,   green,  "Absolutely nothing",                  "We are the robots, who don't do anything!"},
   /* 19 */  
   /* 20 */  
   /* 21 */    

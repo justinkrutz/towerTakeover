@@ -578,32 +578,32 @@ int abortEverything()
 
 int setButtonCallbacks()
 {
-  Controller1.ButtonY.pressed     (startFunction( trayUp ));
-  Controller1.ButtonX.pressed     (startFunction( trayStart ));
-  Controller1.ButtonX.released    (startFunction( trayStop ));
-  Controller1.ButtonY.released    (startFunction( trayStop ));
-  Controller1.ButtonB.pressed     (startFunction( abortEverything ));
+  Controller1.ButtonY.     pressed (setFunction( trayUp ));
+  Controller1.ButtonX.     pressed (setFunction( trayStart ));
+  Controller1.ButtonX.    released (setFunction( trayStop ));
+  Controller1.ButtonY.    released (setFunction( trayStop ));
+  Controller1.ButtonB.     pressed (setFunction( abortEverything ));
 
-  Controller1.ButtonR2.pressed    (startFunction( intakeIn ));
-  Controller1.ButtonR1.pressed    (startFunction( intakeOutSlow ));
+  Controller1.ButtonR2.    pressed (setFunction( intakeIn ));
+  Controller1.ButtonR1.    pressed (setFunction( intakeOutSlow ));
 
-  Controller1.ButtonL2.pressed    (startFunction( driveSlow ));
+  Controller1.ButtonL2.    pressed (setFunction( driveSlow ));
 
-  Controller1.ButtonUp.pressed    (startFunction( armsHigh ));
-  Controller1.ButtonDown.pressed  (startFunction( armsLow ));
-  Controller1.ButtonRight.pressed (startFunction( intakeOut ));
+  Controller1.ButtonUp.    pressed (setFunction( armsHigh ));
+  Controller1.ButtonDown.  pressed (setFunction( armsLow ));
+  Controller1.ButtonRight. pressed (setFunction( intakeOut ));
 
 
-  Controller2.ButtonLeft.pressed  (startFunction( orangeToggleButton ));
-  Controller2.ButtonUp.pressed    (startFunction( purpleToggleButton ));
-  Controller2.ButtonRight.pressed (startFunction( greenToggleButton ));
+  Controller2.ButtonLeft.  pressed (setFunction( orangeToggleButton ));
+  Controller2.ButtonUp.    pressed (setFunction( purpleToggleButton ));
+  Controller2.ButtonRight. pressed (setFunction( greenToggleButton ));
 
-  Controller2.ButtonY.pressed     (startFunction( goalDrive ));
-  Controller2.ButtonX.pressed     (startFunction( trayUp ));
-  Controller2.ButtonA.pressed     (startFunction( trayDown ));
+  Controller2.ButtonY.     pressed (setFunction( goalDrive ));
+  Controller2.ButtonX.     pressed (setFunction( trayUp ));
+  Controller2.ButtonA.     pressed (setFunction( trayDown ));
 
-  Controller2.ButtonR1.pressed    (startFunction( trayReset ));
-  Controller2.ButtonL1.pressed    (startFunction( armsReset ));
+  Controller2.ButtonR1.    pressed (setFunction( trayReset ));
+  Controller2.ButtonL1.    pressed (setFunction( armsReset ));
 
   return 0;
 }
