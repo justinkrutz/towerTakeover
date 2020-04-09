@@ -20,7 +20,8 @@ competition Competition;
 thread menuThread;
 thread driveThread;
 
-#define setFunction( function ) [](void) {function;}
+#define setVoidFunction( function ) [](void) {function;}
+#define setIntFunction( function ) [](int) {function;}
 
 int countUpTask() {
   printf("start\n");
@@ -232,11 +233,8 @@ typedef int (controllerMenu::*controllerMenuFunction)();
 
 controllerMenu* functionToRun;
 //  int (controllerMenu::*function)() 
-int runFunction(controllerMenuFunction function) {
-  // ControllerMenu::function();
-  // std::invoke
-  controllerMenuFunction bla = &controllerMenu::scrollRight;
-  &bla();
+int runFunction() {
+  ControllerMenu.scrollRight();
   return 0;
 }
 
@@ -334,10 +332,10 @@ void controllerMenu::setCallbacks()
 void pre_auton( void ) {
   Controller1.ButtonB.pressed(abortEverything);
 
-  // Controller1.ButtonLeft.pressed(setFunction( ControllerMenu.scrollLeft() ));
-  // Controller1.ButtonRight.pressed(setFunction( ControllerMenu.scrollRight() ));
-  // Controller1.ButtonA.pressed(setFunction( ControllerMenu.select() ));
-  // Controller1.ButtonB.pressed(setFunction( ControllerMenu.back() ));
+  // Controller1.ButtonLeft.pressed(setVoidFunction( ControllerMenu.scrollLeft() ));
+  // Controller1.ButtonRight.pressed(setVoidFunction( ControllerMenu.scrollRight() ));
+  // Controller1.ButtonA.pressed(setVoidFunction( ControllerMenu.select() ));
+  // Controller1.ButtonB.pressed(setVoidFunction( ControllerMenu.back() ));
 
     // menuLcdDraw();
     // controllerDraw();
@@ -352,7 +350,9 @@ void usercontrol( void ) {
   // if (Competition.isEnabled()) 
   //   setDriveButtonCallbacks();
   // else
-  menuThread = runFunction;
+  // auto lambdaF = [](controllerMenu::*f) {return 0;};
+  // menuThread = [](thread) {ControllerMenu.scrollRight(); return 0;};
+  menuThread = setIntFunction( ControllerMenu.scrollLeft() );
 
   ControllerMenu.printMenu();
   while (1) {
