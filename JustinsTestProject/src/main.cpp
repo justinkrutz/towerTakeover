@@ -23,15 +23,9 @@ thread driveThread;
 #define setVoidFunction( function ) [](void) {function;}
 #define setIntFunction( function ) [](thread) {function; return 0;}
 
-void countUpTask() {
   printf("start\n");
   int count = 0;
 
-  repeat(50) {
-    printf("Up %d\n", count++);
-    
-    // don't hog the cpu :)
-    task::sleep( 20 );
   }
 
   // return 0;
