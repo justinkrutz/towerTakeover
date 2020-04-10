@@ -9,9 +9,9 @@
 
 #include <bits/stdc++.h>
 
-#include "controllerMenu.h"
-#include "driverControl.h"
-#include "robotFunctions.h"
+#include "controller-menu.h"
+#include "controller-buttons.h"
+#include "robot-functions.h"
 
 
 using namespace vex;
@@ -20,15 +20,10 @@ competition Competition;
 
 
 void pre_auton( void ) {
-  Controller1.ButtonB.pressed(abortEverything);
-    // menuLcdDraw();
-    // controllerDraw();
-    // Brain.Screen.pressed(menuLcdTouch);
-
-  ControllerMenu.printMenu();
-  setCallbacksAutonSelect();
+  ControllerMenu::printMenu();
+  ControllerMenu::setCallbacks();
   waitUntil(Competition.isCompetitionSwitch() || Competition.isFieldControl());
-  setCallbacksDriverMode();
+  RobotFunctions::setCallbacks();
 }
 
 void autonomous( void ) {
@@ -38,7 +33,7 @@ void autonomous( void ) {
 void usercontrol( void ) {
 
   while (1) {
-    runButtons();
+    ControllerButtons::runButtons();
     task::sleep(10); //Sleep task for a short amount of time to prevent wasted resources.
   }
 }
