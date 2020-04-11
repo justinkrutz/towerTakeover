@@ -21,8 +21,11 @@ namespace ControllerButtons {
 
   std::vector<buttonStruct> buttonCallbacks;
 
+  void groupFunction(void (* function)()) {
+    function();
+  }
+
   int foo() {
-    printf("foo\n");
     return 0;
   }
 
@@ -40,20 +43,16 @@ namespace ControllerButtons {
 
         //Run the function in a separate thread
         if (!buttonCallback.triggerOnRelease) {
-          functionGLOBAL = buttonCallback.function;
-          *buttonCallback.Thread = thread([](void) {functionGLOBAL();});
-          // *buttonCallback.Thread = thread(buttonCallback.function);
-          // *buttonCallback.Thread = thread(buttonCallback.function);
+          // functionGLOBAL = buttonCallback.function;
+          *buttonCallback.Thread = thread(buttonCallback.function);
+          // *buttonCallback.Thread = thread(groupFunction, buttonCallback.function);
           printf("%ld\n", buttonCallback.Thread->get_id());
-
         }
 
       } else if (wasReleased) {
         buttonCallback.wasTriggered = false;
         if (buttonCallback.triggerOnRelease) {
-          // functionGLOBAL = buttonCallback.function;
           *buttonCallback.Thread = thread(buttonCallback.function);
-          // *buttonCallback.Thread = thread([](void) {functionGLOBAL();});
         }
       }
     }
