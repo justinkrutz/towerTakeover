@@ -30,29 +30,10 @@ void autonomous( void ) {
 
 }
 
-
-// void (* function)(void)
-void bla(void * func) {
-  ((void(*)()) func)();
-}
-
 void usercontrol( void ) {
-  // bla(RobotFunctions::countUpTask);
-  // (thread(RobotFunctions::countUpTask));
-  thread t;
-  thread g;
-  // (thread(RobotFunctions::countUpTask));
-  // (thread(RobotFunctions::countUpTask));
-  t = thread(bla, (void *)&RobotFunctions::countUpTask);
-  t.detach();
-  task::sleep(100); //Sleep task for a short amount of time to prevent wasted resources.
-  // g = thread(bla, (void *)&RobotFunctions::countUpTask);
-  // task::sleep(100); //Sleep task for a short amount of time to prevent wasted resources.
-  t.interrupt();
-  // thread(bla, (void *)&RobotFunctions::countUpTask);
-  // thread(bla).interrupt();
+
   while (1) {
-    // ControllerButtons::runButtons();
+    ControllerButtons::runButtons();
     task::sleep(10); //Sleep task for a short amount of time to prevent wasted resources.
   }
 }

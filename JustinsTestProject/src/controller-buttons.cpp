@@ -9,8 +9,6 @@
 
 using namespace vex;
 
-void (* functionGLOBAL)();
-
 namespace ControllerButtons {
   namespace Thread {
   thread menu;
@@ -21,12 +19,8 @@ namespace ControllerButtons {
 
   std::vector<buttonStruct> buttonCallbacks;
 
-  void groupFunction(void (* function)()) {
-    function();
-  }
-
-  int foo() {
-    return 0;
+  void getAroundVexThreadBug(void * func) {
+  ((void(*)()) func)();
   }
 
   void runButtons() {
@@ -43,16 +37,14 @@ namespace ControllerButtons {
 
         //Run the function in a separate thread
         if (!buttonCallback.triggerOnRelease) {
-          // functionGLOBAL = buttonCallback.function;
-          *buttonCallback.Thread = thread(buttonCallback.function);
-          // *buttonCallback.Thread = thread(groupFunction, buttonCallback.function);
-          printf("%ld\n", buttonCallback.Thread->get_id());
+          *buttonCallback.Thread = thread(getAroundVexThreadBug, (void *)buttonCallback.function);
+          printf("thread id %ld\n", buttonCallback.Thread->get_id());
         }
 
       } else if (wasReleased) {
         buttonCallback.wasTriggered = false;
         if (buttonCallback.triggerOnRelease) {
-          *buttonCallback.Thread = thread(buttonCallback.function);
+          *buttonCallback.Thread = thread(getAroundVexThreadBug, (void *)buttonCallback.function);
         }
       }
     }
