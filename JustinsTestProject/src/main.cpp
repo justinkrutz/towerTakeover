@@ -3,7 +3,12 @@
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
 // Controller2          controller                    
+// TestMotor1           motor         2               
+// TestMotor2           motor         7               
+// Vision               vision        8               
+// Inertial             inertial      9               
 // ---- END VEXCODE CONFIGURED DEVICES ----
+
 
 #include "vex.h"
 
@@ -21,17 +26,22 @@ competition Competition;
 
 void pre_auton( void ) {
   ControllerMenu::printMenu();
+  ControllerMenu::loadSettings();
   ControllerMenu::setCallbacks();
+  (thread (RobotFunctions::checkForWarnings));
   waitUntil(Competition.isCompetitionSwitch() || Competition.isFieldControl());
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1, 0);
+  Controller1.Screen.print("Connected");
+  ControllerMenu::checkForAuton();
   RobotFunctions::setCallbacks();
 }
 
 void autonomous( void ) {
-
+  ControllerMenu::runAuton();
 }
 
 void usercontrol( void ) {
-
   while (1) {
     ControllerButtons::runButtons();
     task::sleep(10); //Sleep task for a short amount of time to prevent wasted resources.
