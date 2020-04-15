@@ -7,22 +7,28 @@
 
 
 namespace ControllerButtons {
-  namespace Thread {
-    extern thread menu;
-    extern thread drive;
-    extern thread other;
-    extern thread abort;
+  class GroupClass {
+    public:
+      thread gThread;
+      int gSubGroup;
+  };
+  namespace Group {
+    extern GroupClass menu;
+    extern GroupClass drive;
+    extern GroupClass other;
+    extern GroupClass abort;
   }
 
   extern void runButtons();
 
   struct buttonStruct {
-  controller::button button;
-  bool triggerOnRelease;
-  thread * Thread;
-  void (* function)();
+    controller::button button;
+    bool triggerOnRelease;
+    GroupClass * group;
+    int subGroup;
+    void (* function)();
 
-  bool wasTriggered;
+    bool wasTriggered;
   };
   extern std::vector<buttonStruct> buttonCallbacks;
 }
