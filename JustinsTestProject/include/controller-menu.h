@@ -6,4 +6,5 @@ void checkForAuton();
 void resetSettingDefaults();
 void storeSettings();
 void loadSettings();
+void menuItemInit();
 } // namespace ControllerMenu

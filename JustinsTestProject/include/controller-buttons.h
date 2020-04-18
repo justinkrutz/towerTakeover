@@ -1,16 +1,18 @@
+#ifndef controller_buttons_h_
+#define controller_buttons_h_
+
 #include "vex.h"
 
 #include <bits/stdc++.h>
 
 namespace ControllerButtons {
-class GroupClass {
-public:
+struct GroupClass {
   thread gThread;
   int gSubGroup;
 };
 namespace Group {
 extern GroupClass menu;
-extern GroupClass test;
+extern GroupClass test; 
 extern GroupClass abort;
 } // namespace Group
 
@@ -27,3 +29,5 @@ struct buttonStruct {
 };
 extern std::vector<buttonStruct> buttonCallbacks;
 } // namespace ControllerButtons
+
+#endif // controller_buttons_h_

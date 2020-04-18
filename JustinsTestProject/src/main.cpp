@@ -36,10 +36,11 @@ void printGraphData() {
 }
 
 void pre_auton(void) {
-  ControllerMenu::printMenu();
+  ControllerMenu::menuItemInit();
   ControllerMenu::loadSettings();
   ControllerMenu::setCallbacks();
-  (thread(RobotFunctions::checkForWarnings));
+  ControllerMenu::printMenu();
+  // (thread(RobotFunctions::checkForWarnings));
   // (thread (printGraphData));
   waitUntil(Competition.isCompetitionSwitch() || Competition.isFieldControl());
   Controller1.Screen.clearScreen();
