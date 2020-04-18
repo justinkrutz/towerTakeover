@@ -2,27 +2,28 @@
 
 #include <bits/stdc++.h>
 
-
-#define VOID_LAMBDA( function ) [](void) {function;}
-
-
 namespace ControllerButtons {
-  namespace Thread {
-    extern thread menu;
-    extern thread drive;
-    extern thread other;
-    extern thread abort;
-  }
+class GroupClass {
+public:
+  thread gThread;
+  int gSubGroup;
+};
+namespace Group {
+extern GroupClass menu;
+extern GroupClass test;
+extern GroupClass abort;
+} // namespace Group
 
-  extern void runButtons();
+void runButtons();
 
-  struct buttonStruct {
+struct buttonStruct {
   controller::button button;
   bool triggerOnRelease;
-  thread * Thread;
-  void (* function)();
+  GroupClass *group;
+  int subGroup;
+  void (*function)();
 
   bool wasTriggered;
-  };
-  extern std::vector<buttonStruct> buttonCallbacks;
-}
+};
+extern std::vector<buttonStruct> buttonCallbacks;
+} // namespace ControllerButtons
