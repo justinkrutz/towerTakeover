@@ -142,12 +142,11 @@ void printFolder() {
   Controller1.Screen.clearScreen();
   Controller1.Screen.setCursor(1, 0);
   Controller1.Screen.print(selection.c_str());
-  // Controller1.Screen.setCursor(2, 0);
-  // Controller1.Screen.print(itemTypeName(currentItem->items
-  //                          [currentItem->cursorLocation]->itemType));    
+  Controller1.Screen.setCursor(2, 0);
+  Controller1.Screen.print(itemTypeName(currentItem->items
+                           [currentItem->cursorLocation]->itemType));    
   Controller1.Screen.setCursor(3, 0);
-  Controller1.Screen.print(currentItem->items
-                           [currentItem->cursorLocation]->name);
+  Controller1.Screen.print(currentItem->items[currentItem->cursorLocation]->name);
 }
 
 void printAuton() {
@@ -235,8 +234,8 @@ void back() {
 void select() {
   switch (currentItem->itemType) {
   case Folder:
-    currentItem->items[currentItem->cursorLocation]->parentItem = currentItem;
-    currentItem = currentItem->items[currentItem->cursorLocation];
+      currentItem->items[currentItem->cursorLocation]->parentItem = currentItem;
+      currentItem = currentItem->items[currentItem->cursorLocation];
     printMenu();
     break;
   case Toggle:
@@ -259,16 +258,16 @@ void printMenu() {
     printFolder();
     break;
   case Autonomous:
-    // printAuton();
+    printAuton();
     break;
   case Toggle:
-    // printToggle();
+    printToggle();
     break;
   case Slider:
-    // printSlider();
+    printSlider();
     break;
   case Action:
-    // printAction("Press 'A' to run");
+    printAction("Press 'A' to run");
     break;
   }
 }
@@ -330,42 +329,42 @@ void resetSettingDefaults() {
   }
 }
 
+ItemStruct redAutonOneI = createAutonItem(
+    "Red One", RobotFunctions::countUpTask, "Hopefully scores");
+ItemStruct blueAutonOneI = createAutonItem(
+    "Blue One", RobotFunctions::countUpTask, "Hopefully scores");
+ItemStruct skillsAutonOneI = createAutonItem(
+    "Skills One", RobotFunctions::countUpTask, "Hopefully scores");
+ItemStruct testSliderI = createSliderItem(
+    "Test Slider", 64, "Words");
+ItemStruct testToggleI = createToggleItem(
+    "Test Toggle", 1, "Word");
+ItemStruct loadSettingsI = createActionItem(
+    "Load Settings", loadSettings, "from SD card");
+ItemStruct storeSettingsI = createActionItem(
+    "Store Settings", storeSettings, "to SD card");
+ItemStruct resetSettingDefaultsI = createActionItem(
+    "Reset Defaults", resetSettingDefaults, "from program");
+
+ItemStruct actions  = createFolderItem("Actions",  {&loadSettingsI,
+                                                    &storeSettingsI,
+                                                    &resetSettingDefaultsI});
+ItemStruct settings = createFolderItem("Settings", {&testSliderI,
+                                                    &testToggleI});
+ItemStruct other    = createFolderItem("Other",    {});
+ItemStruct skills   = createFolderItem("Skills",   {&skillsAutonOneI});
+ItemStruct blue     = createFolderItem("Blue",     {&blueAutonOneI,
+                                                    &blueAutonOneI,
+                                                    &blueAutonOneI});
+ItemStruct red      = createFolderItem("Red",      {&redAutonOneI});
+
+ItemStruct root     = createFolderItem("Root",     {&red, 
+                                                    &blue,
+                                                    &skills,
+                                                    &other, 
+                                                    &settings,
+                                                    &actions});
 void menuItemInit() {
-  ItemStruct redAutonOneI = createAutonItem(
-      "Red One", RobotFunctions::countUpTask, "Hopefully scores");
-  ItemStruct blueAutonOneI = createAutonItem(
-      "Blue One", RobotFunctions::countUpTask, "Hopefully scores");
-  ItemStruct skillsAutonOneI = createAutonItem(
-      "Skills One", RobotFunctions::countUpTask, "Hopefully scores");
-  ItemStruct testSliderI = createSliderItem(
-      "Test Slider", 64, "Words");
-  ItemStruct testToggleI = createToggleItem(
-      "Test Toggle", 1, "Word");
-  ItemStruct loadSettingsI = createActionItem(
-      "Load Settings", loadSettings, "from SD card");
-  ItemStruct storeSettingsI = createActionItem(
-      "Store Settings", storeSettings, "to SD card");
-  ItemStruct resetSettingDefaultsI = createActionItem(
-      "Reset Defaults", resetSettingDefaults, "from program");
-
-  ItemStruct actions  = createFolderItem("Actions",  {&loadSettingsI,
-                                                      &storeSettingsI,
-                                                      &resetSettingDefaultsI});
-  ItemStruct settings = createFolderItem("Settings", {&testSliderI,
-                                                      &testToggleI});
-  ItemStruct other    = createFolderItem("Other",    {});
-  ItemStruct skills   = createFolderItem("Skills",   {&skillsAutonOneI});
-  ItemStruct blue     = createFolderItem("Blue",     {&blueAutonOneI,
-                                                      &blueAutonOneI,
-                                                      &blueAutonOneI});
-  ItemStruct red      = createFolderItem("Red",      {&redAutonOneI});
-
-  ItemStruct root     = createFolderItem("Root",     {&red, 
-                                                      &blue,
-                                                      &skills,
-                                                      &other, 
-                                                      &settings,
-                                                      &actions});
   currentItem = &root;
 }
 
