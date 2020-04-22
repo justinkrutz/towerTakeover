@@ -17,10 +17,10 @@
 #include "controller-menu.h"
 #include "robot-functions.h"
 
-
 using namespace vex;
 
 competition Competition;
+
 
 void printGraphData() {
   while (1) {
@@ -36,24 +36,24 @@ void printGraphData() {
 }
 
 void pre_auton(void) {
-  ControllerMenu::printMenu();
-  ControllerMenu::loadSettings();
-  ControllerMenu::setCallbacks();
-  (thread(RobotFunctions::checkForWarnings));
+  controllermenu::printMenu();
+  controllermenu::loadSettings();
+  controllermenu::setCallbacks();
+  // (thread(robotfunctions::checkForWarnings));
   // (thread (printGraphData));
   waitUntil(Competition.isCompetitionSwitch() || Competition.isFieldControl());
   Controller1.Screen.clearScreen();
   Controller1.Screen.setCursor(1, 0);
   Controller1.Screen.print("Connected");
-  ControllerMenu::checkForAuton();
-  RobotFunctions::setCallbacks();
+  controllermenu::checkForAuton();
+  robotfunctions::setCallbacks();
 }
 
-void autonomous(void) { ControllerMenu::runAuton(); }
+void autonomous(void) { controllermenu::runAuton(); }
 
 void usercontrol(void) {
   while (1) {
-    ControllerButtons::runButtons();
+    controllerbuttons::runButtons();
     task::sleep(10); // Sleep task for a short amount of time to prevent wasted
                      // resources.
   }

@@ -8,11 +8,11 @@
 
 using namespace vex;
 
-namespace ControllerMenu {
+namespace controllermenu {
 
 namespace {
 
-enum menuItemType {Folder, Autonomous, SettingSwitch, SettingSlider, Action};
+enum MenuItemType {Folder, Autonomous, SettingSwitch, SettingSlider, Action};
 
 const char *itemTypeName(int item) {
   switch (item) {
@@ -34,7 +34,7 @@ int currentItem(0);
 
 struct itemStruct {
   int parentItemNumber;
-  int itemType;
+  MenuItemType itemType;
   std::vector<int> items;
   const char *name;
   const char *description;
@@ -55,9 +55,9 @@ std::vector <itemStruct> Database = {
   /*  3 */  { 0, Folder,        {8                    },              "Skills"},
   /*  4 */  { 0, Folder,        {0                    },               "Other"},
   /*  5 */  { 0, Folder,        {9, 10                },            "Settings"},
-  /*  6 */  { 1, Autonomous,    {0},             "Red one", "1234567890123456789", RobotFunctions::countDownTask},
-  /*  7 */  { 2, Autonomous,    {0},            "Blue one",                  "Scores points", RobotFunctions::countDownTask},
-  /*  8 */  { 3, Autonomous,    {0},          "Skills one",                  "Scores points", RobotFunctions::countDownTask},
+  /*  6 */  { 1, Autonomous,    {0},             "Red one", "1234567890123456789", robotfunctions::countDownTask},
+  /*  7 */  { 2, Autonomous,    {0},            "Blue one",                  "Scores points", robotfunctions::countDownTask},
+  /*  8 */  { 3, Autonomous,    {0},          "Skills one",                  "Scores points", robotfunctions::countDownTask},
   /*  9 */  { 5, SettingSlider, {0},              "Slider",             "", NULL, 57},
   /* 10 */  { 5, SettingSwitch, {0},              "Switch",             "", NULL, 1},
   /* 11 */  { 0, Folder,        {12, 13, 14           },             "Actions"},
@@ -159,6 +159,8 @@ void scroll(int direction) {
     }
     Database[currentItem].settingValue = tempSettingValue;
     break;
+  default:
+    break;
   }
   printMenu();
 }
@@ -192,6 +194,8 @@ void select() {
     printAction("Complete!");
     Controller1.rumble(".");
     break;
+  default:
+    break;
   }
 }
 } // namespace
@@ -217,14 +221,14 @@ void printMenu() {
 }
 
 void setCallbacks() {
-  using namespace ControllerButtons;
+  using namespace controllerbuttons;
   buttonCallbacks = {
-    {Controller1.ButtonRight, false, &Group::menu, 0, scrollRight},
-    {Controller1.ButtonLeft,  false, &Group::menu, 0, scrollLeft},
-    {Controller1.ButtonUp,    false, &Group::menu, 0, scrollUp},
-    {Controller1.ButtonDown,  false, &Group::menu, 0, scrollDown},
-    {Controller1.ButtonA,     false, &Group::menu, 0, select},
-    {Controller1.ButtonB,     false, &Group::menu, 0, back},
+    {&Controller1.ButtonRight, false, {&threads::menu}, &scrollRight},
+    {&Controller1.ButtonLeft,  false, {&threads::menu}, &scrollLeft},
+    {&Controller1.ButtonUp,    false, {&threads::menu}, &scrollUp},
+    {&Controller1.ButtonDown,  false, {&threads::menu}, &scrollDown},
+    {&Controller1.ButtonA,     false, {&threads::menu}, &select},
+    {&Controller1.ButtonB,     false, {&threads::menu}, &back},
   };
 }
 
@@ -273,4 +277,4 @@ void storeSettings() {
   }
 }
 
-} // namespace ControllerMenu
+} // namespace controllermenu
