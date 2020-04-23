@@ -222,14 +222,14 @@ void printMenu() {
 
 void setCallbacks() {
   using namespace controllerbuttons;
-  buttonCallbacks = {
-    {&Controller1.ButtonRight, false, {&threads::menu}, &scrollRight},
-    {&Controller1.ButtonLeft,  false, {&threads::menu}, &scrollLeft},
-    {&Controller1.ButtonUp,    false, {&threads::menu}, &scrollUp},
-    {&Controller1.ButtonDown,  false, {&threads::menu}, &scrollDown},
-    {&Controller1.ButtonA,     false, {&threads::menu}, &select},
-    {&Controller1.ButtonB,     false, {&threads::menu}, &back},
-  };
+  // buttonCallbacks = {
+  //   {&Controller1.ButtonRight, false, {&threads::menu}, &scrollRight},
+  //   {&Controller1.ButtonLeft,  false, {&threads::menu}, &scrollLeft},
+  //   {&Controller1.ButtonUp,    false, {&threads::menu}, &scrollUp},
+  //   {&Controller1.ButtonDown,  false, {&threads::menu}, &scrollDown},
+  //   {&Controller1.ButtonA,     false, {&threads::menu}, &select},
+  //   {&Controller1.ButtonB,     false, {&threads::menu}, &back},
+  // };
 }
 
 void runAuton() {

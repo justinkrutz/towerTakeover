@@ -3,7 +3,11 @@
 #include "controller-buttons.h"
 #include "robot-functions.h"
 
+
 namespace robotfunctions {
+controllerbuttons::MacroGroup test1;
+controllerbuttons::MacroGroup test2;
+controllerbuttons::MacroGroup abort;
 
 // Test function that counts up to 49 in the terminal.
 void countUpTask() {
@@ -54,29 +58,30 @@ void countUpTaskHold() {
 }
 
 // Abort the test 
-void abortTest() {
-    controllerbuttons::threads::test.interrupt();
+void abortTest1() {
+  controllerbuttons::interruptMacroGroup({&test1});
 }
 
-void abortTestHold() {
-  // if (controllerbuttons::group::test.lastTriggeredBy == &Controller1.ButtonLeft) {
-    // controllerbuttons::group::test.gThread.interrupt();
-    thread(countUpTaskHold).interrupt();
-  // }
+void abortTest2() {
+  controllerbuttons::interruptMacroGroup({&test2});
 }
 
+void countUpTaskAbort() {
+  thread(countUpTaskHold).interrupt();
+}
 void setCallbacks() {
   using namespace controllerbuttons;
+  MacroGroupVector = {&test1, &test2, &abort};
   buttonCallbacks = {
-      {&Controller1.ButtonA,     false, {&threads::test},  &countDownTask},
-      {&Controller1.ButtonY,     false, {&threads::test},  &countUpTask},
-      {&Controller1.ButtonX,     false, {&threads::test},  &singleUseButton},
-      {&Controller1.ButtonRight, false, {&threads::test},  &countDownTask},
-      {&Controller1.ButtonLeft,  false, {&threads::test},  &countUpTaskHold},
-      {&Controller1.ButtonLeft,   true, {&threads::abort}, &abortTestHold},
-      {&Controller1.ButtonUp,    false, {&threads::test},  &singleUseButton},
-      {&Controller1.ButtonB,     false, {&threads::abort}, &abortTest},
-      {&Controller1.ButtonDown,  false, {&threads::abort}, &abortTest},
+      {&Controller1.ButtonA,     false, {&test1,  &test2},  &countDownTask},
+      {&Controller1.ButtonY,     false, {&test1}, &countUpTask},
+      {&Controller1.ButtonX,     false, {&test1}, &singleUseButton},
+      {&Controller1.ButtonRight, false, {&test2}, &countDownTask},
+      {&Controller1.ButtonLeft,  false, {&test2}, &countUpTaskHold},
+      {&Controller1.ButtonLeft,   true, {&abort}, &countUpTaskAbort},
+      {&Controller1.ButtonUp,    false, {&test2}, &singleUseButton},
+      {&Controller1.ButtonB,     false, {&abort}, &abortTest1},
+      {&Controller1.ButtonDown,  false, {&abort}, &abortTest2},
   };
 }
 

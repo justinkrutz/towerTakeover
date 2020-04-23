@@ -9,12 +9,9 @@
 using namespace vex;
 
 namespace controllerbuttons {
-namespace threads {
-thread menu;
-thread test;
-thread abort;
-} // namespace group
+thread noThread;
 
+std::vector<MacroGroup *> MacroGroupVector;
 // Stores what buttons should run which functions
 // Is writen to in ::setCalback functions
 std::vector<ButtonStruct> buttonCallbacks;
@@ -35,6 +32,10 @@ std::vector<ButtonStruct> buttonCallbacks;
  * Should be run in a loop.
  */
 void runButtons() {
+  for (auto &macroGroup : MacroGroupVector) {
+    macroGroup->isRunning = macroGroup->lastRunThread->joinable();
+  }
+
   // Cycle through all button callbacks
   for (auto &buttonCallback : buttonCallbacks) {
     bool wasPressed  = ( buttonCallback.button->pressing() &&
@@ -42,10 +43,12 @@ void runButtons() {
     bool wasReleased = (!buttonCallback.button->pressing() &&
                          buttonCallback.wasTriggered);
     bool isRunning;
-    for (int i = 0; i<buttonCallback.buttonThread.size(); i++) {
-      isRunning = isRunning || buttonCallback.buttonThread[i]->joinable();
+    for (auto &macroGroup : buttonCallback.macroGroups) {
+      isRunning = macroGroup->isRunning;
     }
 
+    // printf("ptr %p\n", MacroGroupVector[0]);
+    // printf("ptr %p\n", buttonCallback.macroGroups[0]);
     // If the button has been pressed and the thread isn't running
     if (wasPressed && !isRunning) {
       // Set the function to not run when the button is held
@@ -59,7 +62,17 @@ void runButtons() {
     }
 
     // Run the function in a separate thread
-    *buttonCallback.buttonThread[0] = thread(buttonCallback.function);
+    buttonCallback.buttonThread = thread(buttonCallback.function);
+    for (auto &macroGroup : buttonCallback.macroGroups) {
+      macroGroup->isRunning = true;
+      macroGroup->lastRunThread = &buttonCallback.buttonThread;
+    }
+  }
+}
+
+void interruptMacroGroup(std::vector<MacroGroup *> macroGroups) {
+  for (auto &macroGroup : macroGroups) {
+    macroGroup->lastRunThread->interrupt();
   }
 }
 } // namespace controllerbuttons

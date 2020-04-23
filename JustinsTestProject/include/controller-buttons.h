@@ -3,28 +3,25 @@
 #include <bits/stdc++.h>
 
 namespace controllerbuttons {
+extern thread noThread;
 
-namespace threads {
-extern thread menu;
-extern thread test;
-extern thread abort;
-} // namespace group
-
+struct MacroGroup {
+  bool isRunning;
+  thread *lastRunThread = &noThread;
+};
 
 struct ButtonStruct {
-
   // Button to be checked
   controller::button *button;
-
   // Should the functon be started when the button us pressed or released
   bool triggerOnRelease;
-
-  // A 
-  std::vector<thread *> buttonThread;
+  std::vector<MacroGroup *> macroGroups;
   void (*function)();
 
   bool wasTriggered;
+  thread buttonThread;
 };
+
 
 /**
  * Checks through each struct in the vector one by one,
@@ -41,8 +38,18 @@ struct ButtonStruct {
  * Should be run in a loop.
  */
 void runButtons();
+void interruptMacroGroup(std::vector<MacroGroup *> macroGroups);
+
+extern std::vector<MacroGroup *> MacroGroupVector;
 
 // Stores what buttons should run which functions
 // Is writen to in ::setCallback functions
 extern std::vector<ButtonStruct> buttonCallbacks;
+
 } // namespace controllerbuttons
+
+
+// #define CREATE_MACRO_GROUP(name) \
+// MacroGroup name; \
+// name.lastRunThread = &controllerbuttons::noThread; \
+// controllerbuttons::MacroGroupVector.push_back(name);
