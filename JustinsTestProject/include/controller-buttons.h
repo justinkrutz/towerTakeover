@@ -3,23 +3,23 @@
 #include <bits/stdc++.h>
 
 namespace controllerbuttons {
-extern thread no_thread;
+extern thread noThread;
 
 struct MacroGroup {
-  bool is_running;
-  thread *last_run_thread = &no_thread;
+  bool isRunning;
+  thread *lastRunThread = &noThread;
 };
 
 struct ButtonStruct {
   // Button to be checked
   controller::button *button;
   // Should the functon be started when the button us pressed or released
-  bool trigger_on_release;
-  std::vector<MacroGroup *> macro_groups;
+  bool triggerOnRelease;
+  std::vector<MacroGroup *> macroGroups;
   void (*function)();
 
-  bool was_triggered;
-  thread button_thread;
+  bool wasTriggered;
+  thread buttonThread;
 };
 
 
@@ -30,7 +30,7 @@ struct ButtonStruct {
  *   2. There is not currently a function running in the same group,
  *   3. Last time around the loop, either the button wasn't pressed,
  *      or the group was running.
- * If the function is set to trigger_on_release, then it will run
+ * If the function is set to triggerOnRelease, then it will run
  * when the button is released, instead of pressed.
  *
  * Subgroups are only for external reference, and do not effect what the buttons do.
@@ -38,18 +38,18 @@ struct ButtonStruct {
  * Should be run in a loop.
  */
 void runButtons();
-void interruptMacroGroup(std::vector<MacroGroup *> macro_groups);
+void interruptMacroGroup(std::vector<MacroGroup *> macroGroups);
 
-extern std::vector<MacroGroup *> macro_group_vector;
+extern std::vector<MacroGroup *> MacroGroupVector;
 
 // Stores what buttons should run which functions
 // Is writen to in ::setCallback functions
-extern std::vector<ButtonStruct> button_callbacks;
+extern std::vector<ButtonStruct> buttonCallbacks;
 
 } // namespace controllerbuttons
 
 
 // #define CREATE_MACRO_GROUP(name) \
 // MacroGroup name; \
-// name.last_run_thread = &controllerbuttons::no_thread; \
-// controllerbuttons::macro_group_vector.push_back(name);
+// name.lastRunThread = &controllerbuttons::noThread; \
+// controllerbuttons::MacroGroupVector.push_back(name);

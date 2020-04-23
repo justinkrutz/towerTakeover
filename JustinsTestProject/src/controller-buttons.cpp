@@ -9,12 +9,13 @@
 using namespace vex;
 
 namespace controllerbuttons {
-thread no_thread;
+thread noThread;
 
-std::vector<MacroGroup *> macro_group_vector;
+std::vector<MacroGroup *> MacroGroupVector;
 // Stores what buttons should run which functions
 // Is writen to in ::setCalback functions
-std::vector<ButtonStruct> button_callbacks;
+std::vector<ButtonStruct> buttonCallbacks;
+
 /**
  * Checks through each struct in the vector one by one,
  * and starts the function on a seperate thread, but only if:
@@ -31,47 +32,47 @@ std::vector<ButtonStruct> button_callbacks;
  * Should be run in a loop.
  */
 void runButtons() {
-  for (auto &macro_group : macro_group_vector) {
-    macro_group->is_running = macro_group->last_run_thread->joinable();
+  for (auto &macroGroup : MacroGroupVector) {
+    macroGroup->isRunning = macroGroup->lastRunThread->joinable();
   }
 
   // Cycle through all button callbacks
-  for (auto &button_callback : button_callbacks) {
-    bool was_pressed  = ( button_callback.button->pressing() &&
-                        !button_callback.was_triggered);
-    bool was_released = (!button_callback.button->pressing() &&
-                         button_callback.was_triggered);
-    bool is_running;
-    for (auto &macro_group : button_callback.macro_groups) {
-      is_running = macro_group->is_running;
+  for (auto &buttonCallback : buttonCallbacks) {
+    bool wasPressed  = ( buttonCallback.button->pressing() &&
+                        !buttonCallback.wasTriggered);
+    bool wasReleased = (!buttonCallback.button->pressing() &&
+                         buttonCallback.wasTriggered);
+    bool isRunning;
+    for (auto &macroGroup : buttonCallback.macroGroups) {
+      isRunning = macroGroup->isRunning;
     }
 
-    // printf("ptr %p\n", macro_group_vector[0]);
-    // printf("ptr %p\n", button_callback.macro_groups[0]);
+    // printf("ptr %p\n", MacroGroupVector[0]);
+    // printf("ptr %p\n", buttonCallback.macroGroups[0]);
     // If the button has been pressed and the thread isn't running
-    if (was_pressed && !is_running) {
+    if (wasPressed && !isRunning) {
       // Set the function to not run when the button is held
-      button_callback.was_triggered = true;
-      if (button_callback.trigger_on_release) continue;
-    } else if (was_released) {
-      button_callback.was_triggered = false;
-      if (!button_callback.trigger_on_release) continue;
+      buttonCallback.wasTriggered = true;
+      if (buttonCallback.triggerOnRelease) continue;
+    } else if (wasReleased) {
+      buttonCallback.wasTriggered = false;
+      if (!buttonCallback.triggerOnRelease) continue;
     } else {
       continue;
     }
 
     // Run the function in a separate thread
-    button_callback.button_thread = thread(button_callback.function);
-    for (auto &macro_group : button_callback.macro_groups) {
-      macro_group->is_running = true;
-      macro_group->last_run_thread = &button_callback.button_thread;
+    buttonCallback.buttonThread = thread(buttonCallback.function);
+    for (auto &macroGroup : buttonCallback.macroGroups) {
+      macroGroup->isRunning = true;
+      macroGroup->lastRunThread = &buttonCallback.buttonThread;
     }
   }
 }
 
-void interruptMacroGroup(std::vector<MacroGroup *> macro_groups) {
-  for (auto &macro_group : macro_groups) {
-    macro_group->last_run_thread->interrupt();
+void interruptMacroGroup(std::vector<MacroGroup *> macroGroups) {
+  for (auto &macroGroup : macroGroups) {
+    macroGroup->lastRunThread->interrupt();
   }
 }
 } // namespace controllerbuttons
