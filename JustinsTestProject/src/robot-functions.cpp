@@ -59,26 +59,26 @@ void countUpTaskHold() {
 
 // Abort the test 
 void abortTest1() {
-  controllerbuttons::interruptMacroGroup({&test1});
+  controllerbuttons::interrupt_macro_group({&test1});
 }
 
 void abortTest2() {
-  controllerbuttons::interruptMacroGroup({&test2});
+  controllerbuttons::interrupt_macro_group({&test2});
 }
 
-void countUpTaskAbort() {
+void countUpTaskHoldAbort() {
   thread(countUpTaskHold).interrupt();
 }
 void setCallbacks() {
   using namespace controllerbuttons;
-  MacroGroupVector = {&test1, &test2, &abort};
-  buttonCallbacks = {
+  macro_group_vector = {&test1, &test2, &abort};
+  button_callbacks = {
       {&Controller1.ButtonA,     false, {&test1,  &test2},  &countDownTask},
       {&Controller1.ButtonY,     false, {&test1}, &countUpTask},
       {&Controller1.ButtonX,     false, {&test1}, &singleUseButton},
       {&Controller1.ButtonRight, false, {&test2}, &countDownTask},
       {&Controller1.ButtonLeft,  false, {&test2}, &countUpTaskHold},
-      {&Controller1.ButtonLeft,   true, {&abort}, &countUpTaskAbort},
+      {&Controller1.ButtonLeft,   true, {&abort}, &countUpTaskHoldAbort},
       {&Controller1.ButtonUp,    false, {&test2}, &singleUseButton},
       {&Controller1.ButtonB,     false, {&abort}, &abortTest1},
       {&Controller1.ButtonDown,  false, {&abort}, &abortTest2},
