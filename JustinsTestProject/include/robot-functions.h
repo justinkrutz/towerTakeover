@@ -23,7 +23,7 @@
   WARN(device, "Out of Range",                                                 \
        !(device.member > lowerRange && device.member < upperRange))
 
-namespace RobotFunctions {
+namespace robotfunctions {
 void countUpTask();
 void countDownTask();
 void singleUseButton();
@@ -31,4 +31,4 @@ void singleUseButton();
 void checkForWarnings();
 
 void setCallbacks();
-} // namespace RobotFunctions
+} // namespace robotfunctions
