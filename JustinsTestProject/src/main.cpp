@@ -74,7 +74,6 @@ int main() {
 
   // Prevent main from exiting with an infinite loop.
   while (1) {
-    task::sleep(100); // Sleep the task for a short amount of time to prevent
-                      // wasted resources.
+    task::sleep(100); // Sleep the task for a short amount of time to prevent wasted resources.
   }
 }

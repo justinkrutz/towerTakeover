@@ -59,11 +59,11 @@ void countUpTaskHold() {
 
 // Abort the test 
 void abortTest1() {
-  controllerbuttons::interrupt_macro_group({&test1});
+  controllerbuttons::interruptMacroGroup({&test1});
 }
 
 void abortTest2() {
-  controllerbuttons::interrupt_macro_group({&test2});
+  controllerbuttons::interruptMacroGroup({&test2});
 }
 
 void countUpTaskHoldAbort() {
